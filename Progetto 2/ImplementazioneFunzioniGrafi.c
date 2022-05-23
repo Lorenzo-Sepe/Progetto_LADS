@@ -1,6 +1,7 @@
 #include "StrutturaGrafi.h"
 #include "StrutturaHeap.h"
 #include <stdlib.h>
+#include <stdio.h>
 #define INT_MAX 9999
 #define bianco 0 
 #define grigio 1 
@@ -17,7 +18,7 @@ int getEmpty(MappaCollegamenti Grafo){
 }
 
 /**
- * @brief crea un grafo di dato numoro nodi senza archi
+ * @brief crea un grafo di dato numoro nodi senza archi. da sosotituire con lettura da file, è incompleta perché i nodi sono senza nome
  * 
  * @param NumeroNodiInput 
  * @return MappaCollegamenti 
@@ -43,7 +44,7 @@ MappaCollegamenti crea_grafo_vuoto(int NumeroNodiInput){
             Grafo->NumeroNodi = NumeroNodiInput;
             for ( i = 0; i < NumeroNodiInput; i++)
             {
-               Grafo->ListaAdiacenza[i] = NULL;
+               Grafo->ListaAdiacenza[i].head = NULL;
             }
 
             return Grafo;
@@ -52,14 +53,32 @@ MappaCollegamenti crea_grafo_vuoto(int NumeroNodiInput){
 }
 
 /**
+ * @brief da un nome al nodo di indice dato
+ * 
+ * @param GrafoInput 
+ * @param NodoInput 
+ * @param NomeInput 
+ */
+void nomina_nodo(MappaCollegamenti GrafoInput,int NodoInput, char *NomeInput){
+    if (GrafoInput == NULL)
+    {
+        printf("Grafo Vuoto, impossibile completare l'operazione");
+        return;
+    }
+    
+    strcpy(GrafoInput->ListaAdiacenza[NodoInput].NomeTappa, NomeInput);
+    return;
+}
+
+/**
  * @brief aggiunge un nuovo nodo al grafo e aggiorna il vettore di liste
  * 
  * @param GrafoInput 
  * @return MappaCollegamenti 
  */
-MappaCollegamenti g_insert(MappaCollegamenti GrafoInput) {
+MappaCollegamenti g_insert(MappaCollegamenti GrafoInput, char* NomeInput) {
 ArchiGrafo *NuovaLista;
-if (GrafoInput == NULL) return printf("Grafo vuoto.") ;
+if (GrafoInput == NULL) return printf("Grafo vuoto.");
 
 NuovaLista = realloc(GrafoInput->ListaAdiacenza, (GrafoInput->NumeroNodi+1) * sizeof(ArchiGrafo));
 
@@ -68,7 +87,8 @@ if (NuovaLista ==NULL)
 else
 {     
 GrafoInput->ListaAdiacenza=NuovaLista;
-GrafoInput->ListaAdiacenza[GrafoInput->NumeroNodi]=NULL;
+GrafoInput->ListaAdiacenza[GrafoInput->NumeroNodi].head = NULL;
+strcpy(GrafoInput->ListaAdiacenza[GrafoInput->NumeroNodi].NomeTappa, NomeInput);
 GrafoInput->NumeroNodi = GrafoInput->NumeroNodi+1;
 }
 
@@ -90,12 +110,12 @@ MappaCollegamenti EliminazioneLogicaNodo(MappaCollegamenti GrafoInput, int NodoI
     int i;    
     for ( i = 0; i < GrafoInput->NumeroNodi; i++)
     {
-        if (GrafoInput->ListaAdiacenza[i]->key == NodoInput)
+        if (GrafoInput->ListaAdiacenza[i].head->key == NodoInput)
         {
-            GrafoInput->ListaAdiacenza[i]->visibilità=0;
+            GrafoInput->ListaAdiacenza[i].head->visibilità=0;
         }
     }
-    free(GrafoInput->ListaAdiacenza[NodoInput]);
+    free(GrafoInput->ListaAdiacenza[NodoInput].head);
     return GrafoInput;
 }
 
@@ -113,7 +133,7 @@ void stampa_grafo(MappaCollegamenti GrafoInput){
         for ( i = 0; i < GrafoInput->NumeroNodi; i++)
         {
             printf("Nodi adiacenti al nodo %d->",i);
-            edge=GrafoInput->ListaAdiacenza[i];
+            edge=GrafoInput->ListaAdiacenza[i].head;
             while (edge!=NULL)
             {
                 printf("%d-> ",edge->key);
@@ -162,7 +182,7 @@ void DepthFirstSearch(MappaCollegamenti GrafoInput) {
 void DFS_Visita(MappaCollegamenti GrafoInput, int i, int *VettoreFlag){
     ArchiGrafo edge;
     VettoreFlag[i]=grigio;
-    for (edge = GrafoInput->ListaAdiacenza[i]; edge ; edge=edge->next)
+    for (edge = GrafoInput->ListaAdiacenza[i].head; edge ; edge=edge->next)
     {
         if (VettoreFlag[edge->key]==bianco)
         {
@@ -195,20 +215,23 @@ ArchiGrafo createNode(int v) {
  * @param dest 
  */
 
-void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, int distanza, float costo) {
+void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, char *NomeInput, int distanza, float costo, int visibilitàInput) {
   // Add edge from src to dest
   struct Tappa* newNode = createNode(dest);
-  newNode->next = graph->ListaAdiacenza[src];
+  newNode->next = graph->ListaAdiacenza[src].head;
+  strcpy(newNode->NomeTappa,NomeInput);
+  newNode->visibilità=visibilitàInput;
   newNode->costo=costo;
   newNode->distanza=distanza;
-  graph->ListaAdiacenza[src] = newNode;
+  graph->ListaAdiacenza[src].head = newNode;
 
   // Add edge from dest to src
   newNode = createNode(src);
   newNode->costo=costo;
   newNode->distanza=distanza;
-  newNode->next = graph->ListaAdiacenza[dest];
-  graph->ListaAdiacenza[dest] = newNode;
+  newNode->next = graph->ListaAdiacenza[dest].head;
+  strcpy(newNode->NomeTappa,graph->ListaAdiacenza[src].NomeTappa);  
+  graph->ListaAdiacenza[dest].head = newNode;
 }
 
 /**
@@ -223,10 +246,10 @@ void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, int distanza, flo
 void Aggiungi_Arco_Orientato(MappaCollegamenti graph, int src, int dest, int distanza, float costo) {
   // Add edge from src to dest
   struct Tappa* newNode = createNode(dest);
-  newNode->next = graph->ListaAdiacenza[src];
+  newNode->next = graph->ListaAdiacenza[src].head;
   newNode->distanza = distanza;
   newNode->costo=costo;
-  graph->ListaAdiacenza[src] = newNode;
+  graph->ListaAdiacenza[src].head = newNode;
 }
 
 /**
@@ -256,7 +279,7 @@ int GradoUscita (MappaCollegamenti GrafoInput,int VerticeInput) {
     }
     else{
         int ris;
-        ris = lunghezzaListaAdj(GrafoInput->ListaAdiacenza[VerticeInput]);
+        ris = lunghezzaListaAdj(GrafoInput->ListaAdiacenza[VerticeInput].head);
         return ris;
     }
 	
@@ -304,7 +327,7 @@ int GradoIngresso (MappaCollegamenti GrafoInput, int VerticeInput){
         else{
             for (i = 0; i < GrafoInput->NumeroNodi; i++)
             {
-                ris = ris + Ricerca_Vertice_In_Adj(GrafoInput->ListaAdiacenza[i],VerticeInput);
+                ris = ris + Ricerca_Vertice_In_Adj(GrafoInput->ListaAdiacenza[i].head,VerticeInput);
             }
             return ris;    
         }
@@ -346,10 +369,10 @@ MappaCollegamenti CreaGrafoTrasposto (MappaCollegamenti GrafoInput)
                 newGrafo->NumeroNodi=GrafoInput->NumeroNodi;
                 for ( i = 0; i < newGrafo->NumeroNodi; i++)
                 {
-                    while (GrafoInput->ListaAdiacenza[i] != NULL)
+                    while (GrafoInput->ListaAdiacenza[i].head != NULL)
                     {
                         //add edge
-                        Aggiungi_Arco_Orientato(newGrafo,GrafoInput->ListaAdiacenza[i]->key,i,GrafoInput->ListaAdiacenza[i]->distanza,GrafoInput->ListaAdiacenza[i]->costo);
+                        Aggiungi_Arco_Orientato(newGrafo,GrafoInput->ListaAdiacenza[i].head->key,i,GrafoInput->ListaAdiacenza[i].head->distanza,GrafoInput->ListaAdiacenza[i].head->costo);
                     }
                
                 }
@@ -370,11 +393,11 @@ MappaCollegamenti CreaGrafoTrasposto (MappaCollegamenti GrafoInput)
 static void VGC_Visita(MappaCollegamenti GrafoInput,int i,int *VettoreFlag, ArchiGrafo *VettorePred){
     ArchiGrafo edge;
     VettoreFlag[i]=grigio;
-    for (edge = GrafoInput->ListaAdiacenza[i]; edge ; edge=edge->next)
+    for (edge = GrafoInput->ListaAdiacenza[i].head; edge ; edge=edge->next)
     {
         if (VettoreFlag[edge->key]==bianco)
         {
-            VettorePred[edge->key]=GrafoInput->ListaAdiacenza[i]; 
+            VettorePred[edge->key]=GrafoInput->ListaAdiacenza[i].head; 
             VGC_Visita(GrafoInput,edge->key,VettoreFlag,VettorePred);
         }
     }
@@ -585,7 +608,7 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
         // vertices of u (the extracted
         // vertex) and update 
         // their distance values
-        ArchiGrafo pCrawl = graph->ListaAdiacenza[u];
+        ArchiGrafo pCrawl = graph->ListaAdiacenza[u].head;
         while (pCrawl != NULL)
         {
             int v = pCrawl->key;
@@ -670,7 +693,7 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
         // vertices of u (the extracted
         // vertex) and update 
         // their distance values
-        ArchiGrafo pCrawl = graph->ListaAdiacenza[u];
+        ArchiGrafo pCrawl = graph->ListaAdiacenza[u].head;
         while (pCrawl != NULL)
         {
             int v = pCrawl->key;
@@ -710,76 +733,77 @@ void stamapVettoreAdiacenza(MappaCollegamenti GrafoInput){
     for ( i = 0; i < GrafoInput->NumeroNodi; i++)
     printf("Lista di possibili destinazioni: \n");
     {
-        if (GrafoInput->ListaAdiacenza[i]->visibilità==1)
+        if (GrafoInput->ListaAdiacenza[i].head->visibilità==1)
         {
-            printf("\s \n", GrafoInput->ListaAdiacenza[i]->NomeTappa);
+            printf("\s \n", GrafoInput->ListaAdiacenza[i].NomeTappa);
         }    
     }
     return;
 }
 
+
 /**
- * @brief 
+ * @brief legge da un file e aggiunge i collegamenti al grafo in input 
  * 
  *
-MappaCollegamenti LetturaDaFILEGrafo (FILE *fp, MappaCollegamenti GrafoInput){
+ */
+MappaCollegamenti LetturaDaFILEGrafoCollegamenti (FILE *fp, MappaCollegamenti GrafoInput){
     char buffer[MAX_STRINGHE];
-    char bufferCategoria[MAX_STRINGHE/6];
-    char bufferGenere[MAX_STRINGHE/6];
-    char bufferAbito[MAX_STRINGHE/6];
-    char bufferMarca[MAX_STRINGHE/6];
-    char bufferPrezzo[MAX_STRINGHE/6];
-    char bufferTaglie[MAX_STRINGHE/6];
+    char bufferKey[MAX_STRINGHE/5];
+    char bufferNome[MAX_STRINGHE/5];
+    char bufferDistanza[MAX_STRINGHE/5];
+    char bufferCosto[MAX_STRINGHE/5];
+    char bufferVisibilità[MAX_STRINGHE/5];
     char *bufferTemp;
     int start = 0;
     int end = 0;
-
-    // sono estrate dal file le informazioni di tutti gli abiti
-        while(fgets(buffer, DIMBUFF, fp)) {
+    int i;
+    // sono estrate dal file le informazioni di tutti i collegamenti
+        for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+        {
+            while(fgets(buffer, MAX_STRINGHE, fp)) {
             start = 0;
             end = 0;
-            // estrazione categoria
+            // estrazione key (stringa più in avanti convertita in float con la funzione "atoi")
             for(; buffer[end]!=';'; end++);
             bufferTemp = substr(buffer, start, end);
-            strcpy(bufferCategoria, bufferTemp);
+            strcpy(bufferKey, bufferTemp);
             free(bufferTemp);
             end = end + 2;
             start = end;
-            // estrazione genere
+            // estrazione nome
             for(; buffer[end]!=';'; end++);
             bufferTemp = substr(buffer, start, end);
-            strcpy(bufferGenere, bufferTemp);
+            strcpy(bufferNome, bufferTemp);
             free(bufferTemp);
             end = end + 2;
             start = end;
-            // estrazione nome abito
+            // estrazione distanza
             for(; buffer[end]!=';'; end++);
             bufferTemp = substr(buffer, start, end);
-            strcpy(bufferAbito, bufferTemp);
+            strcpy(bufferDistanza, bufferTemp);
             free(bufferTemp);
             end = end + 2;
             start = end;
-            // estrazione marca abito
+            // estrazione costo (stringa più in avanti convertita in float con la funzione "atof")
             for(; buffer[end]!=';'; end++);
             bufferTemp = substr(buffer, start, end);
-            strcpy(bufferMarca, bufferTemp);
+            strcpy(bufferCosto, bufferTemp);
             free(bufferTemp);
             end = end + 2;
             start = end;
-            // estrazione prezzo (stringa più in avanti convertita in float con la funzione "atof")
+            // estrazione visibilità (stringa più in avanti convertita in float con la funzione "atoi") 
             for(; buffer[end]!=';'; end++);
             bufferTemp = substr(buffer, start, end);
-            strcpy(bufferPrezzo, bufferTemp);
+            strcpy(bufferVisibilità, bufferTemp);
             free(bufferTemp);
             end = end + 2;
             start = end;
-            // estrazione taglie (stringa di zero o più singole taglie, estratte in seguito dalla funzione "aggiungiAbito")            
-            for(; buffer[end]!='<'; end++);
-            bufferTemp = substr(buffer, start, end);
-            strcpy(bufferTaglie, bufferTemp);
-            free(bufferTemp);
-            //creazione della macro struttura di liste di categorie, i cui nodi contengono alberi di abiti, i cui nodi contengono liste di taglie
-            headCategoria = aggiungiAbito(headCategoria, bufferCategoria, bufferGenere, bufferAbito, bufferMarca, atof(bufferPrezzo), bufferTaglie);
+            
+            //aggiungi a lista di adiacenza
+            Aggiungi_Arco(GrafoInput,i,atoi(bufferKey),bufferNome,atoi(bufferDistanza),atof(bufferCosto),atoi(bufferVisibilità)); 
+            }
         }
+        
+    return GrafoInput;    
 }
-*/
