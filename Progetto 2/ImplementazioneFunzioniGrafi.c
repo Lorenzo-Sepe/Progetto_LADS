@@ -741,11 +741,35 @@ void stamapVettoreAdiacenza(MappaCollegamenti GrafoInput){
     return;
 }
 
+/**
+ * @brief Legge da file i dati per creare i nodi di un grafo
+ * 
+ * @param fp 
+ * @param GrafoInput 
+ * @return MappaCollegamenti 
+ */
+MappaCollegamenti LetturaDaFILEGrafo (FILE *fp, MappaCollegamenti GrafoInput){
+    char NomeInput;
+    int NumeroNodiInput;
+    fscanf(fp,"%d\n",&NumeroNodiInput);
+    GrafoInput=crea_grafo_vuoto(NumeroNodiInput);
+    int i = 0;
+    while (fscanf(fp,"%s", NomeInput) == 1)
+    {
+       nomina_nodo(GrafoInput,i,NomeInput);
+       i++;
+    }
+    
+    return GrafoInput
+}
+
 
 /**
- * @brief legge da un file e aggiunge i collegamenti al grafo in input 
+ * @brief legge da file testo le informazioni per creare una lista di adiacenza del grafo
  * 
- *
+ * @param fp 
+ * @param GrafoInput 
+ * @return MappaCollegamenti 
  */
 MappaCollegamenti LetturaDaFILEGrafoCollegamenti (FILE *fp, MappaCollegamenti GrafoInput){
     char buffer[MAX_STRINGHE];
@@ -759,8 +783,8 @@ MappaCollegamenti LetturaDaFILEGrafoCollegamenti (FILE *fp, MappaCollegamenti Gr
     int end = 0;
     int i;
     // sono estrate dal file le informazioni di tutti i collegamenti
-        for ( i = 0; i < GrafoInput->NumeroNodi; i++)
-        {
+       // for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+        //{
             while(fgets(buffer, MAX_STRINGHE, fp)) {
             start = 0;
             end = 0;
@@ -803,7 +827,7 @@ MappaCollegamenti LetturaDaFILEGrafoCollegamenti (FILE *fp, MappaCollegamenti Gr
             //aggiungi a lista di adiacenza
             Aggiungi_Arco(GrafoInput,i,atoi(bufferKey),bufferNome,atoi(bufferDistanza),atof(bufferCosto),atoi(bufferVisibilità)); 
             }
-        }
+        //}
         
     return GrafoInput;    
 }
