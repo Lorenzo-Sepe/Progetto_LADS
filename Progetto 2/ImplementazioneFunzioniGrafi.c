@@ -25,30 +25,78 @@ int getEmpty(MappaCollegamenti Grafo){
 MappaCollegamenti crea_grafo_vuoto(int NumeroNodiInput){
     MappaCollegamenti Grafo;
     int i;
-    Grafo=(MappaCollegamenti)malloc(sizeof (struct GrafoCollegamenti) );
-    if (Grafo==NULL)
+    Grafo = (MappaCollegamenti)malloc(sizeof (struct GrafoCollegamenti) );
+    if (Grafo == NULL)
     {
         printf("Errore, impossibile allocare momoria.");
     }
     else
     {
-        Grafo->ListaAdiacenza=(ArchiGrafo)calloc(NumeroNodiInput,sizeof(struct Città));
-        if (Grafo->ListaAdiacenza==NULL)
+        Grafo->ListaAdiacenza=(ArchiGrafo)calloc(NumeroNodiInput,sizeof(struct Tappa));
+        if (Grafo->ListaAdiacenza == NULL)
         {
             printf("Errore, impossibile allocare memoria.");
             free(Grafo);
         }
         else
         {
-            Grafo->NumeroNodi=NumeroNodiInput;
+            Grafo->NumeroNodi = NumeroNodiInput;
             for ( i = 0; i < NumeroNodiInput; i++)
             {
-               Grafo->ListaAdiacenza[i]=NULL;
+               Grafo->ListaAdiacenza[i] = NULL;
             }
 
             return Grafo;
         }
     }
+}
+
+/**
+ * @brief aggiunge un nuovo nodo al grafo e aggiorna il vettore di liste
+ * 
+ * @param GrafoInput 
+ * @return MappaCollegamenti 
+ */
+MappaCollegamenti g_insert(MappaCollegamenti GrafoInput) {
+ArchiGrafo *NuovaLista;
+if (GrafoInput == NULL) return printf("Grafo vuoto.") ;
+
+NuovaLista = realloc(GrafoInput->ListaAdiacenza, (GrafoInput->NumeroNodi+1) * sizeof(ArchiGrafo));
+
+if (NuovaLista ==NULL)  
+    printf("ERRORE: impossibile reallocare memoria \n");
+else
+{     
+GrafoInput->ListaAdiacenza=NuovaLista;
+GrafoInput->ListaAdiacenza[GrafoInput->NumeroNodi]=NULL;
+GrafoInput->NumeroNodi = GrafoInput->NumeroNodi+1;
+}
+
+  return GrafoInput;
+}
+
+/**
+ * @brief rende il nodo designato invisibile e dealloca la sua lista di adiacenza
+ * 
+ * @param GrafoInput 
+ * @return MappaCollegamenti 
+ */
+MappaCollegamenti EliminazioneLogicaNodo(MappaCollegamenti GrafoInput, int NodoInput){
+    if (GrafoInput == NULL)
+    {
+        printf ("Il grafo e' vuoto, impossibile eseguire l'operazione.");
+        return NULL;
+    }
+    int i;    
+    for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+    {
+        if (GrafoInput->ListaAdiacenza[i]->key == NodoInput)
+        {
+            GrafoInput->ListaAdiacenza[i]->visibilità=0;
+        }
+    }
+    free(GrafoInput->ListaAdiacenza[NodoInput]);
+    return GrafoInput;
 }
 
 /**
@@ -96,6 +144,7 @@ void DepthFirstSearch(MappaCollegamenti GrafoInput) {
         {
             if(VettoreFlag[i] == bianco){
                 printf("\n%d",i);
+                //GrafoInput-> ListaAdiacenza[i]-> NomeTappa;
                 DFS_Visita(GrafoInput,i,VettoreFlag);
             }
         }
@@ -131,8 +180,8 @@ void DFS_Visita(MappaCollegamenti GrafoInput, int i, int *VettoreFlag){
  * @param v 
  * @return * Create struct* 
  */
-struct Città* createNode(int v) {
-  struct Città* newNode = malloc(sizeof(struct Città));
+ArchiGrafo createNode(int v) {
+  ArchiGrafo newNode = malloc(sizeof(struct Tappa));
   newNode->key = v;
   newNode->next = NULL;
   return newNode;
@@ -148,7 +197,7 @@ struct Città* createNode(int v) {
 
 void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, int distanza, float costo) {
   // Add edge from src to dest
-  struct Città* newNode = createNode(dest);
+  struct Tappa* newNode = createNode(dest);
   newNode->next = graph->ListaAdiacenza[src];
   newNode->costo=costo;
   newNode->distanza=distanza;
@@ -173,7 +222,7 @@ void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, int distanza, flo
 
 void Aggiungi_Arco_Orientato(MappaCollegamenti graph, int src, int dest, int distanza, float costo) {
   // Add edge from src to dest
-  struct Città* newNode = createNode(dest);
+  struct Tappa* newNode = createNode(dest);
   newNode->next = graph->ListaAdiacenza[src];
   newNode->distanza = distanza;
   newNode->costo=costo;
@@ -286,7 +335,7 @@ MappaCollegamenti CreaGrafoTrasposto (MappaCollegamenti GrafoInput)
         }
         else
         {
-            newGrafo->ListaAdiacenza = (ArchiGrafo)calloc(GrafoInput->NumeroNodi,sizeof(struct Città));
+            newGrafo->ListaAdiacenza = (ArchiGrafo)calloc(GrafoInput->NumeroNodi,sizeof(struct Tappa));
             if (newGrafo->ListaAdiacenza==NULL)
             {
                 printf("Errore, impossibile allocare memoria.");
@@ -350,7 +399,7 @@ int VerificaGrafoConnesso(MappaCollegamenti GrafoInput)
     {
         int i;
         int *VettoreFlag=calloc(GrafoInput->NumeroNodi,sizeof(int));
-        ArchiGrafo *VettorePred=malloc(GrafoInput->NumeroNodi*sizeof(struct Città));
+        ArchiGrafo *VettorePred=malloc(GrafoInput->NumeroNodi*sizeof(struct Tappa));
         for ( i = 0; i < GrafoInput->NumeroNodi; i++)
         {
             VettorePred[i] = NULL; //inizializzazione vettore predecessore
@@ -645,3 +694,92 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
     // print the calculated shortest distances
     printArr(dist, V);
 }
+
+/**
+ * @brief stampa il nome delle tappe raggiungibili. Fnziona se il grafo ha un cappio per ogni nodo
+ * 
+ * @param GrafoInput 
+ */
+void stamapVettoreAdiacenza(MappaCollegamenti GrafoInput){
+    if (GrafoInput == NULL)
+    {
+        printf("Grafo vuoto. Impossibile completare l'operazione.\n");
+        return;
+    }
+    int i;
+    for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+    printf("Lista di possibili destinazioni: \n");
+    {
+        if (GrafoInput->ListaAdiacenza[i]->visibilità==1)
+        {
+            printf("\s \n", GrafoInput->ListaAdiacenza[i]->NomeTappa);
+        }    
+    }
+    return;
+}
+
+/**
+ * @brief 
+ * 
+ *
+MappaCollegamenti LetturaDaFILEGrafo (FILE *fp, MappaCollegamenti GrafoInput){
+    char buffer[MAX_STRINGHE];
+    char bufferCategoria[MAX_STRINGHE/6];
+    char bufferGenere[MAX_STRINGHE/6];
+    char bufferAbito[MAX_STRINGHE/6];
+    char bufferMarca[MAX_STRINGHE/6];
+    char bufferPrezzo[MAX_STRINGHE/6];
+    char bufferTaglie[MAX_STRINGHE/6];
+    char *bufferTemp;
+    int start = 0;
+    int end = 0;
+
+    // sono estrate dal file le informazioni di tutti gli abiti
+        while(fgets(buffer, DIMBUFF, fp)) {
+            start = 0;
+            end = 0;
+            // estrazione categoria
+            for(; buffer[end]!=';'; end++);
+            bufferTemp = substr(buffer, start, end);
+            strcpy(bufferCategoria, bufferTemp);
+            free(bufferTemp);
+            end = end + 2;
+            start = end;
+            // estrazione genere
+            for(; buffer[end]!=';'; end++);
+            bufferTemp = substr(buffer, start, end);
+            strcpy(bufferGenere, bufferTemp);
+            free(bufferTemp);
+            end = end + 2;
+            start = end;
+            // estrazione nome abito
+            for(; buffer[end]!=';'; end++);
+            bufferTemp = substr(buffer, start, end);
+            strcpy(bufferAbito, bufferTemp);
+            free(bufferTemp);
+            end = end + 2;
+            start = end;
+            // estrazione marca abito
+            for(; buffer[end]!=';'; end++);
+            bufferTemp = substr(buffer, start, end);
+            strcpy(bufferMarca, bufferTemp);
+            free(bufferTemp);
+            end = end + 2;
+            start = end;
+            // estrazione prezzo (stringa più in avanti convertita in float con la funzione "atof")
+            for(; buffer[end]!=';'; end++);
+            bufferTemp = substr(buffer, start, end);
+            strcpy(bufferPrezzo, bufferTemp);
+            free(bufferTemp);
+            end = end + 2;
+            start = end;
+            // estrazione taglie (stringa di zero o più singole taglie, estratte in seguito dalla funzione "aggiungiAbito")            
+            for(; buffer[end]!='<'; end++);
+            bufferTemp = substr(buffer, start, end);
+            strcpy(bufferTaglie, bufferTemp);
+            free(bufferTemp);
+            //creazione della macro struttura di liste di categorie, i cui nodi contengono alberi di abiti, i cui nodi contengono liste di taglie
+            headCategoria = aggiungiAbito(headCategoria, bufferCategoria, bufferGenere, bufferAbito, bufferMarca, atof(bufferPrezzo), bufferTaglie);
+        }
+}
+*/
