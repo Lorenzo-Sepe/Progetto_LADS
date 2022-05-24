@@ -9,15 +9,15 @@ int main(int argc, char const *argv[])
 {
     AlberoUtenti Clienti = NULL;
     AlberoUtenti ClienteCorrente = NULL;
+    MappaCollegamenti CollegamentiTreno, CollegamentiAereo, CollegamentiAlberghi;
     FILE *fpInClienti, *fpOutClienti;
     FILE *fpInAlberghi,*fpOutAlberghi;
-    MappaCollegamenti CollegamentiTreno,CollegamentiAereo,CollegamentiAlberghi;
     FILE *fpInCollegamentiAereo, *fpOutCollegamentiAereo;
     FILE *fpInCollegamentiTreno, *fpOutCollegamentiTreno;
     FILE *fpInCollegamentiAlberghi, *fpOutCollegamentiAlberghi;
     char Scelta[MAX_STRINGHE],MailInput[MAX_STRINGHE],PasswordInput[MAX_STRINGHE];
     char FileAlberghi[MAX_STRINGHE];
-    int i,selector;
+    int i,selector=0;
     int repeat = 1;
 
     fpInClienti = fopen("ClientiRegistrati.txt","r");
@@ -54,10 +54,80 @@ int main(int argc, char const *argv[])
 
     if (strcmp(ClienteCorrente->Mail,"ADMIN") == 0)
     {
+        printf("Benvenuto nella sezione amministrativa del applicazione.\nPremere il corrispettivo tasto per eseguire una delle azioni qui riportate:\n");
+        printf("0 - Aggiungi una Tappa ai viaggi in Aereo. \n");
+        printf("1 - Rimuovi una Tappa ai viaggi in Aereo. \n");
+        printf("2 - Aggiungi un collegamento tra gli Aereoporti. \n");
+        printf("3 - Rimuovi un collegamento tra gli Aereoporti. \n");
+        printf("4 - Aggiungi una Tappa ai viaggi in Treno. \n");
+        printf("5 - Rimuovi una Tappa ai viaggi in Treno. \n");
+        printf("6 - Aggiungi un collegamento tra le Stazioni Ferroviarie. \n");
+        printf("7 - Rimuovi un collegamento tra gli le Stazioni Ferroviarie. \n");
+        printf("8 - Aggiungi un Hotel dalla lista associata ad una tappa. \n");
+        printf("9 - Rimuovi un Hotel dalla lista associata ad una tappa. \n");
+        printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+        while (repeat == 1 && selector<4)
+        {
+            printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+            printf("Premere un tasto: ");
+            scanf("%d", &selector);
+            switch (selector)
+            {
+            case 0:
+                /* code */
+                break;
+            case 1:
+            
+                break;
+
+            case 2:
+            
+                break;
+
+            case 3:
+            
+                break;
+
+            case 4:
+            
+                break;
+
+            case 5:
+            
+                break;
+
+            case 6:
+            
+                break;
+
+            case 7:
+            
+                break;
+
+            case 8:
+            
+                break;
+
+            case 9:
+            
+                break;
+
+            default:
+                printf("Operazioni terminate.");
+                repeat=0; 
+                break;
+            }
+
+        //aggiornamento dei file
+        printf("Continuare? O = No/1 = Si: ");
+        scanf("%d",&repeat);
+        }
+        
         /* code */ //modalità admin
     }
     else
     {
+        
         /* code */ //modalita utente
 
         /*

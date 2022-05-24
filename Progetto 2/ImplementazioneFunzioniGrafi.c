@@ -742,7 +742,7 @@ void stamapVettoreAdiacenza(MappaCollegamenti GrafoInput){
 }
 
 /**
- * @brief Legge da file i dati per creare i nodi di un grafo
+ * @brief Legge da file i dati per creare i nodi di un grafo con il loro nome
  * 
  * @param fp 
  * @param GrafoInput 
@@ -760,7 +760,7 @@ MappaCollegamenti LetturaDaFILEGrafo (FILE *fp, MappaCollegamenti GrafoInput){
        i++;
     }
     
-    return GrafoInput
+    return GrafoInput;
 }
 
 
