@@ -1,7 +1,9 @@
 #include "StrutturaGrafi.h"
 #include "StrutturaHeap.h"
+#include "Miscellanee.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #define INT_MAX 9999
 #define bianco 0 
 #define grigio 1 
@@ -11,7 +13,7 @@
  * @brief verifica se un grafo è vuoto
  * 
  * @param Grafo 
- * @return int 
+ * @return int 1 se il grafo è vuoto, 0 altrimenti
  */
 int getEmpty(MappaCollegamenti Grafo){
     return (Grafo==NULL);
@@ -33,7 +35,7 @@ MappaCollegamenti crea_grafo_vuoto(int NumeroNodiInput){
     }
     else
     {
-        Grafo->ListaAdiacenza=(ArchiGrafo)calloc(NumeroNodiInput,sizeof(struct Tappa));
+        Grafo->ListaAdiacenza=(struct AdjList *)calloc(NumeroNodiInput,sizeof(struct AdjList));
         if (Grafo->ListaAdiacenza == NULL)
         {
             printf("Errore, impossibile allocare memoria.");
@@ -45,11 +47,38 @@ MappaCollegamenti crea_grafo_vuoto(int NumeroNodiInput){
             for ( i = 0; i < NumeroNodiInput; i++)
             {
                Grafo->ListaAdiacenza[i].head = NULL;
+               Grafo->ListaAdiacenza[i].visibilita=1;
             }
 
             return Grafo;
         }
     }
+}
+
+/**
+ * @brief A utility function used to print the solution
+ * 
+ * @param dist 
+ * @param n 
+ */
+void printArr(int dist[], int n)
+{
+    printf("Vertex   Distance from Source\n");
+    for (int i = 0; i < n; ++i)
+        printf("%d \t\t %d\n", i, dist[i]);
+}
+
+/**
+ * @brief A utility function used to print the solution
+ * 
+ * @param dist 
+ * @param n 
+ */
+void printArrFloat(float dist[], int n)
+{
+    printf("Vertex   Distance from Source\n");
+    for (int i = 0; i < n; ++i)
+        printf("%d \t\t %.2f\n", i, dist[i]);
 }
 
 /**
@@ -88,6 +117,7 @@ else
 {     
 GrafoInput->ListaAdiacenza=NuovaLista;
 GrafoInput->ListaAdiacenza[GrafoInput->NumeroNodi].head = NULL;
+GrafoInput->ListaAdiacenza[GrafoInput->NumeroNodi].visibilita=1;
 strcpy(GrafoInput->ListaAdiacenza[GrafoInput->NumeroNodi].NomeTappa, NomeInput);
 GrafoInput->NumeroNodi = GrafoInput->NumeroNodi+1;
 }
@@ -110,11 +140,19 @@ MappaCollegamenti EliminazioneLogicaNodo(MappaCollegamenti GrafoInput, int NodoI
     int i;    
     for ( i = 0; i < GrafoInput->NumeroNodi; i++)
     {
-        if (GrafoInput->ListaAdiacenza[i].head->key == NodoInput)
+        if (i == NodoInput)
         {
-            GrafoInput->ListaAdiacenza[i].head->visibilità=0;
-        }
+            GrafoInput->ListaAdiacenza[i].visibilita=0;
+        }else{
+			ArchiGrafo a=GrafoInput->ListaAdiacenza[i].head;
+			while(a!=NULL){
+				if(a->key == NodoInput)
+					a->visibilita = 0;
+				a=a->next;
+			}
+		}
     }
+    
     free(GrafoInput->ListaAdiacenza[NodoInput].head);
     return GrafoInput;
 }
@@ -129,17 +167,21 @@ void stampa_grafo(MappaCollegamenti GrafoInput){
     ArchiGrafo edge;
     if (!getEmpty(GrafoInput))
     {
-        printf("Il Grafo ha %d vertici\n", GrafoInput->NumeroNodi);
+        printf("Ci sono %d Tappe\n", GrafoInput->NumeroNodi);
         for ( i = 0; i < GrafoInput->NumeroNodi; i++)
         {
-            printf("Nodi adiacenti al nodo %d->",i);
-            edge=GrafoInput->ListaAdiacenza[i].head;
-            while (edge!=NULL)
-            {
-                printf("%d-> ",edge->key);
-                edge=edge->next;
-            }
-            printf("NULL\n");
+			if(GrafoInput->ListaAdiacenza[i].visibilita != 0){
+				printf("Tappee adiacenti a %s->",GrafoInput->ListaAdiacenza[i].NomeTappa);
+				edge=GrafoInput->ListaAdiacenza[i].head;
+				while (edge!=NULL)
+				{
+					if(edge->visibilita != 0)
+						printf("%s-> ",edge->NomeTappa);
+					
+					edge=edge->next;
+				}
+				printf("NULL\n");
+			}
         }
     }
 }
@@ -215,41 +257,16 @@ ArchiGrafo createNode(int v) {
  * @param dest 
  */
 
-void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, char *NomeInput, int distanza, float costo, int visibilitàInput) {
+void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, int distanza, float costo, int visibilitàInput) {
   // Add edge from src to dest
   struct Tappa* newNode = createNode(dest);
   newNode->next = graph->ListaAdiacenza[src].head;
-  strcpy(newNode->NomeTappa,NomeInput);
-  newNode->visibilità=visibilitàInput;
+  strcpy(newNode->NomeTappa,get_Nome_from_Indice(graph,dest));
+  newNode->visibilita=visibilitàInput;
   newNode->costo=costo;
   newNode->distanza=distanza;
   graph->ListaAdiacenza[src].head = newNode;
 
-  // Add edge from dest to src
-  newNode = createNode(src);
-  newNode->costo=costo;
-  newNode->distanza=distanza;
-  newNode->next = graph->ListaAdiacenza[dest].head;
-  strcpy(newNode->NomeTappa,graph->ListaAdiacenza[src].NomeTappa);  
-  graph->ListaAdiacenza[dest].head = newNode;
-}
-
-/**
- * @brief Add edge to the graph oriented from src to dest
- * 
- * @param graph 
- * @param src 
- * @param dest 
- * @param distanza
- */
-
-void Aggiungi_Arco_Orientato(MappaCollegamenti graph, int src, int dest, int distanza, float costo) {
-  // Add edge from src to dest
-  struct Tappa* newNode = createNode(dest);
-  newNode->next = graph->ListaAdiacenza[src].head;
-  newNode->distanza = distanza;
-  newNode->costo=costo;
-  graph->ListaAdiacenza[src].head = newNode;
 }
 
 /**
@@ -335,54 +352,6 @@ int GradoIngresso (MappaCollegamenti GrafoInput, int VerticeInput){
 }
 
 /**
- * @brief crea il grafo trasposto dell
- * 
- * @param GrafoInput deve essere orientato
- * @return MappaCollegamenti 
- */
-MappaCollegamenti CreaGrafoTrasposto (MappaCollegamenti GrafoInput)
-{
-    if (GrafoInput == NULL)
-    {
-        printf ("Grafo inserito e' vuoto");
-        return NULL;
-    }
-    else
-    {
-        MappaCollegamenti newGrafo;
-        int i;
-        newGrafo = (MappaCollegamenti)malloc(sizeof (struct GrafoCollegamenti) );
-        if (newGrafo == NULL)
-        {
-            printf("Errore, impossibile allocare momoria.");
-        }
-        else
-        {
-            newGrafo->ListaAdiacenza = (ArchiGrafo)calloc(GrafoInput->NumeroNodi,sizeof(struct Tappa));
-            if (newGrafo->ListaAdiacenza==NULL)
-            {
-                printf("Errore, impossibile allocare memoria.");
-                free(newGrafo);
-            }
-            else
-            {
-                newGrafo->NumeroNodi=GrafoInput->NumeroNodi;
-                for ( i = 0; i < newGrafo->NumeroNodi; i++)
-                {
-                    while (GrafoInput->ListaAdiacenza[i].head != NULL)
-                    {
-                        //add edge
-                        Aggiungi_Arco_Orientato(newGrafo,GrafoInput->ListaAdiacenza[i].head->key,i,GrafoInput->ListaAdiacenza[i].head->distanza,GrafoInput->ListaAdiacenza[i].head->costo);
-                    }
-               
-                }
-                return newGrafo;
-            }
-        }
-    }
-}
-
-/**
  * @brief aggiunge al vettore predecessore
  * 
  * @param GrafoInput 
@@ -422,7 +391,7 @@ int VerificaGrafoConnesso(MappaCollegamenti GrafoInput)
     {
         int i;
         int *VettoreFlag=calloc(GrafoInput->NumeroNodi,sizeof(int));
-        ArchiGrafo *VettorePred=malloc(GrafoInput->NumeroNodi*sizeof(struct Tappa));
+        ArchiGrafo *VettorePred = malloc(GrafoInput->NumeroNodi*sizeof(struct Tappa));
         for ( i = 0; i < GrafoInput->NumeroNodi; i++)
         {
             VettorePred[i] = NULL; //inizializzazione vettore predecessore
@@ -440,7 +409,7 @@ int VerificaGrafoConnesso(MappaCollegamenti GrafoInput)
             }
         }
 
-         for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+        for ( i = 0; i < GrafoInput->NumeroNodi; i++)
         {
             if(VettorePred[i] == NULL) {
                 ris=0;
@@ -450,100 +419,6 @@ int VerificaGrafoConnesso(MappaCollegamenti GrafoInput)
     free(VettoreFlag);
     free(VettorePred);
     return ris;
-    }
-}
-
-
-/**
- * @brief verifica se un array di nodi di input è contenuto in un secodo array di nodi
- * 
- * @param ArchiGrafoInput 
- * @param ArchiGrafoPadre 
- * @param MaxNodi 
- * @return int ritorna 0 se non è sottoinsieme di nodi del padre
- */
-static int VerificaNodiSottografo(ArchiGrafo* ArchiGrafoInput, ArchiGrafo* ArchiGrafoPadre,int MaxNodi, int NodiPadre){
-    if (ArchiGrafoInput == NULL || ArchiGrafoPadre == NULL)
-    {
-        printf("Uno o entrambi i grafi non hanno nodi.");
-        return 0;
-    }
-    else
-    {
-        int i = 0;
-        int ris = 1;
-        for ( i = 0; i < MaxNodi; i++)
-        {
-            int j = 0;
-            while( ris == 1 || j < NodiPadre)
-            {
-                if (ArchiGrafoInput[i] != ArchiGrafoPadre[j]){
-                       ris = 0; 
-                }
-                j++;
-            }
-        }
-        
-        return ris;
-    }
-}
-
-/**
- * @brief verifica se un arco del grafo Input esiste anche nel ggrafo padre 
- * 
- * @param ArchiGrafoInput 
- * @param ArchiGrafoPadre 
- * @param MaxNodi 
- * @return int 
- */
-static int VerificaArchiSottografo(ArchiGrafo* ArchiGrafoInput, ArchiGrafo* ArchiGrafoPadre, int MaxNodi){
-    if (ArchiGrafoInput == NULL || ArchiGrafoPadre == NULL)
-    {
-        printf("Uno o entrambi i grafi non hanno nodi.");
-        return 0;
-    }
-    else
-    {
-        int i;
-        int ris = 1;
-        for ( i = 0; i < MaxNodi; i++ )
-        {
-            if (Ricerca_Vertice_In_Adj(ArchiGrafoInput,ArchiGrafoInput[i]) != Ricerca_Vertice_In_Adj(ArchiGrafoPadre,ArchiGrafoPadre[i]) ) {
-                ris = 0;
-                }
-            
-        }
-
-        return ris;
-    }
-}
-
-/**
- * @brief verifica che il grafo in input sia sottografo del grafo qua chiamato come grafo padre. 1 = Input è sottografo di Padre, 0 altrimenti
- * 
- * @param GrafoInput 
- * @param GrafoPadre 
- * @return int 
- */
-int VerificaSottografo (MappaCollegamenti GrafoInput, MappaCollegamenti GrafoPadre){
-    int nodi,archi;
-    if (GrafoInput == NULL || GrafoPadre == NULL )
-    {
-        printf("Uno o entrambi i grafi sono vuoti.");
-        return 0;
-    }
-    else
-    {
-        if(GrafoInput->NumeroNodi > GrafoPadre->NumeroNodi){
-            printf("Numero di nodi del grafo in ingresso e' maggiore del numero di nodi del grafo padre.");
-            return 0;
-        }
-        else
-        {
-            nodi = VerificaNodiSottografo(GrafoInput->ListaAdiacenza,GrafoPadre->ListaAdiacenza,GrafoInput->NumeroNodi,GrafoPadre->NumeroNodi);
-            archi = VerificaArchiSottografo(GrafoInput->ListaAdiacenza,GrafoPadre->ListaAdiacenza,GrafoInput->NumeroNodi);
-            return (nodi*archi);
-        }
     }
 }
 
@@ -639,7 +514,7 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
  * @param graph 
  * @param src: la key del nodo sorgente
  */
-void dijkstraDistanza(MappaCollegamenti graph, int src)
+void dijkstraCosto(MappaCollegamenti graph, int src)
 {     
     if (graph == NULL)
     {
@@ -652,7 +527,7 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
     int v;
     // dist values used to pick
     // minimum weight edge in cut
-    int dist[V];     
+    float cost[V];     
   
     // minHeap represents set E
     HeapMinimo minHeap = createMinHeap(V);
@@ -661,17 +536,17 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
     // vertices. dist value of all vertices 
     for (v = 0; v < V; ++v)
     {
-        dist[v] = INT_MAX;
-        minHeap->array[v] = newMinHeapNode(v, dist[v]);
+        cost[v] = INT_MAX;
+        minHeap->array[v] = newMinHeapNode(v, cost[v]);
         minHeap->pos[v] = v;
     }
   
-    // Make dist value of src vertex 
+    // Make cost value of src vertex 
     // as 0 so that it is extracted first
-    minHeap->array[src] = newMinHeapNode(src, dist[src]);
+    minHeap->array[src] = newMinHeapNode(src, cost[src]);
     minHeap->pos[src] = src;
-    dist[src] = 0;
-    decreaseKey(minHeap, src, dist[src]);
+    cost[src] = 0;
+    decreaseKey(minHeap, src, cost[src]);
   
     // Initially size of min heap is equal to V
     minHeap->size = V;
@@ -702,20 +577,20 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
             // not finalized yet, and distance to v
             // through u is less than its 
             // previously calculated distance
-            if (isInMinHeap(minHeap, v) && dist[u] != INT_MAX && pCrawl->distanza + dist[u] < dist[v])
+            if (isInMinHeap(minHeap, v) && cost[u] != INT_MAX && pCrawl->costo + cost[u] < cost[v])
             {
-                dist[v] = dist[u] + pCrawl->distanza;
+                cost[v] = cost[u] + pCrawl->costo;
   
                 // update distance 
                 // value in min heap also
-                decreaseKey(minHeap, v, dist[v]);
+                decreaseKey(minHeap, v, cost[v]);
             }
             pCrawl = pCrawl->next;
         }
     }
   
-    // print the calculated shortest distances
-    printArr(dist, V);
+    // print the calculated cheapest path
+    printArrFloat(cost, V);
 }
 
 /**
@@ -733,7 +608,7 @@ void stamapVettoreAdiacenza(MappaCollegamenti GrafoInput){
     for ( i = 0; i < GrafoInput->NumeroNodi; i++)
     printf("Lista di possibili destinazioni: \n");
     {
-        if (GrafoInput->ListaAdiacenza[i].head->visibilità==1)
+        if (GrafoInput->ListaAdiacenza[i].visibilita==1)
         {
             printf("\s \n", GrafoInput->ListaAdiacenza[i].NomeTappa);
         }    
@@ -742,92 +617,181 @@ void stamapVettoreAdiacenza(MappaCollegamenti GrafoInput){
 }
 
 /**
- * @brief Legge da file i dati per creare i nodi di un grafo con il loro nome
+ * @brief Get the Indice del nodo from Nome della tappa
+ * 
+ * @param GrafoInput 
+ * @param NomeInput 
+ * @return int 
+ */
+int get_Indice_from_Nome (MappaCollegamenti GrafoInput, char *NomeInput) {
+    int ris;
+    int i;
+    strcpy(NomeInput,FormattazioneTappe(NomeInput));          
+
+    if (getEmpty(GrafoInput))
+    {
+        printf("Grafo vuoto, impossibile completare l'operazione.");
+        return NULL;
+    }
+
+    for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+    {
+
+        if (strcmp(GrafoInput->ListaAdiacenza[i].NomeTappa,NomeInput)==0)
+        {
+            ris = i;
+        }
+        
+    }
+    return ris;
+}
+
+/**
+ * @brief Get the Nome della tappa from Indice del nodo
+ * 
+ * @param GrafoInput 
+ * @param IndiceInput 
+ * @return char* 
+ */
+char* get_Nome_from_Indice(MappaCollegamenti GrafoInput, int IndiceInput){
+    char ris[MAX_STRINGHE];
+    
+    if (getEmpty(GrafoInput))
+    {
+        printf("Grafo vuoto, impossibile completare l'operazione.");
+        return NULL;
+    }
+
+    strcpy(ris, GrafoInput->ListaAdiacenza[IndiceInput].NomeTappa);
+    return ris;
+}
+
+/**
+ * @brief legge da file il numero di nodi e il nome dei nodi
  * 
  * @param fp 
  * @param GrafoInput 
  * @return MappaCollegamenti 
  */
-MappaCollegamenti LetturaDaFILEGrafo (FILE *fp, MappaCollegamenti GrafoInput){
-    char NomeInput;
-    int NumeroNodiInput;
-    fscanf(fp,"%d\n",&NumeroNodiInput);
-    GrafoInput=crea_grafo_vuoto(NumeroNodiInput);
-    int i = 0;
-    while (fscanf(fp,"%s", NomeInput) == 1)
+static MappaCollegamenti LetturaDaFILEGrafoNodi (FILE *fp, MappaCollegamenti GrafoInput){
+    int i, NumeroNodi;
+    char NomeInput[MAX_STRINGHE];
+    if (fscanf(fp,"%d",&NumeroNodi)==1)
     {
-       nomina_nodo(GrafoInput,i,NomeInput);
-       i++;
+        GrafoInput=crea_grafo_vuoto(NumeroNodi);
+        for ( i = 0; i < NumeroNodi; i++)
+        {
+            if (fscanf(fp,"%s",NomeInput)==1)
+            {
+                nomina_nodo(GrafoInput,i,NomeInput);
+            }
+            
+        }
+        
     }
     
     return GrafoInput;
 }
 
-
 /**
- * @brief legge da file testo le informazioni per creare una lista di adiacenza del grafo
+ * @brief legge da file una lista degli archi e i loro pesi e li aggiunge al grafo
  * 
  * @param fp 
  * @param GrafoInput 
  * @return MappaCollegamenti 
  */
-MappaCollegamenti LetturaDaFILEGrafoCollegamenti (FILE *fp, MappaCollegamenti GrafoInput){
-    char buffer[MAX_STRINGHE];
-    char bufferKey[MAX_STRINGHE/5];
-    char bufferNome[MAX_STRINGHE/5];
-    char bufferDistanza[MAX_STRINGHE/5];
-    char bufferCosto[MAX_STRINGHE/5];
-    char bufferVisibilità[MAX_STRINGHE/5];
-    char *bufferTemp;
-    int start = 0;
-    int end = 0;
+static MappaCollegamenti LetturaDaFILEGrafoCollegamenti (FILE *fp, MappaCollegamenti GrafoInput){
+    int sorgente, destinazione, distanza, visibility;
+    float costo;
+    char Nome[MAX_STRINGHE];
+
+    while (fscanf(fp, "%d %d %d %f %d", &sorgente, &destinazione, &distanza, &costo, &visibility) == 5)
+    {
+        Aggiungi_Arco(GrafoInput,sorgente,destinazione,distanza,costo,visibility);
+    }
+    
+    return    GrafoInput;
+}
+
+/**
+ * @brief combina le due funzioni qui sopra per leggere il file in modo corretto
+ * 
+ * @param fpNodi 
+ * @param fpArchi 
+ * @param GrafoInput 
+ * @return MappaCollegamenti 
+ */
+MappaCollegamenti LetturaDaFILEGrafo(FILE *fpNodi, FILE *fpArchi, MappaCollegamenti GrafoInput){
+    GrafoInput = LetturaDaFILEGrafoNodi(fpNodi,GrafoInput);
+    GrafoInput = LetturaDaFILEGrafoCollegamenti(fpArchi,GrafoInput);
+
+    return GrafoInput;
+}
+
+/**
+ * @brief funzione ausiliaria che stampa in un file il numero dei nodi e la lista dei nomi delle tappe
+ * 
+ * @param fpNodi 
+ * @param GrafoInput 
+ */
+void CreazioneFILEGrafoNodi(FILE *fpNodi, MappaCollegamenti GrafoInput){
     int i;
-    // sono estrate dal file le informazioni di tutti i collegamenti
-       // for ( i = 0; i < GrafoInput->NumeroNodi; i++)
-        //{
-            while(fgets(buffer, MAX_STRINGHE, fp)) {
-            start = 0;
-            end = 0;
-            // estrazione key (stringa più in avanti convertita in float con la funzione "atoi")
-            for(; buffer[end]!=';'; end++);
-            bufferTemp = substr(buffer, start, end);
-            strcpy(bufferKey, bufferTemp);
-            free(bufferTemp);
-            end = end + 2;
-            start = end;
-            // estrazione nome
-            for(; buffer[end]!=';'; end++);
-            bufferTemp = substr(buffer, start, end);
-            strcpy(bufferNome, bufferTemp);
-            free(bufferTemp);
-            end = end + 2;
-            start = end;
-            // estrazione distanza
-            for(; buffer[end]!=';'; end++);
-            bufferTemp = substr(buffer, start, end);
-            strcpy(bufferDistanza, bufferTemp);
-            free(bufferTemp);
-            end = end + 2;
-            start = end;
-            // estrazione costo (stringa più in avanti convertita in float con la funzione "atof")
-            for(; buffer[end]!=';'; end++);
-            bufferTemp = substr(buffer, start, end);
-            strcpy(bufferCosto, bufferTemp);
-            free(bufferTemp);
-            end = end + 2;
-            start = end;
-            // estrazione visibilità (stringa più in avanti convertita in float con la funzione "atoi") 
-            for(; buffer[end]!=';'; end++);
-            bufferTemp = substr(buffer, start, end);
-            strcpy(bufferVisibilità, bufferTemp);
-            free(bufferTemp);
-            end = end + 2;
-            start = end;
-            
-            //aggiungi a lista di adiacenza
-            Aggiungi_Arco(GrafoInput,i,atoi(bufferKey),bufferNome,atoi(bufferDistanza),atof(bufferCosto),atoi(bufferVisibilità)); 
+    fprintf(fpNodi,"%d\n", GrafoInput->NumeroNodi);
+    for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+    {
+        fprintf(fpNodi,"%s\n", GrafoInput->ListaAdiacenza[i].NomeTappa);
+    }
+}
+
+/**
+ * @brief funzione ausiliaria che stampa gli archi e i loro pesi
+ * 
+ * @param fpArchi 
+ * @param GrafoInput 
+ */
+void CreazioneFILEGrafoArchi(FILE *fpArchi, MappaCollegamenti GrafoInput){
+    int i;
+    ArchiGrafo edge;
+    if (!getEmpty(GrafoInput))
+    {
+        for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+        {
+            edge=GrafoInput->ListaAdiacenza[i].head;
+            while (edge!=NULL)
+            {
+                fprintf(fpArchi, "%d %d %d %f %d\n", i, edge->key, edge->distanza, edge->costo, edge->visibilita); 
+                edge=edge->next;
             }
-        //}
-        
-    return GrafoInput;    
+        }
+    }
+}
+
+
+/**
+ * @brief funzione ausiliaria che dealloca liste di adiacenza del grafo
+ * 
+ * @param head 
+ */
+static void deallocaListaAdiacenza(ArchiGrafo head)
+{
+	
+	if (head != NULL) {
+		deallocaLista(head->next);
+		free(head);
+	}
+}
+
+/**
+ * @brief dealloca la struttura del grafo
+ * 
+ * @param GrafoInput 
+ */
+void deallocaGrafo(MappaCollegamenti GrafoInput){
+    int i;
+    for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+    {
+        deallocaListaAdiacenza(GrafoInput->ListaAdiacenza[i].head);
+    }
+    free(GrafoInput->ListaAdiacenza);
+    free(GrafoInput);
 }

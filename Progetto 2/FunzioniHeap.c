@@ -123,3 +123,53 @@ NodoHeap extractMin(HeapMinimo minHeap)
   
     return root;
 }
+
+/**
+ * @brief Function to decreasy dist value of a given vertex v. This function uses pos[] of min heap to get the current index of node in min heap
+ * 
+ * @param minHeap 
+ * @param v 
+ * @param dist 
+ */
+void decreaseKey(HeapMinimo minHeap, int v, int dist)
+{
+    // Get the index of v in  heap array
+    int i = minHeap->pos[v];
+  
+    // Get the node and update its dist value
+    minHeap->array[i]->dist = dist;
+  
+    // Travel up while the complete 
+    // tree is not hepified.
+    // This is a O(Logn) loop
+    while (i && minHeap->array[i]->dist < minHeap->array[(i - 1) / 2]->dist)
+    {
+        // Swap this node with its parent
+        minHeap->pos[minHeap->array[i]->v] = 
+                                      (i-1)/2;
+        minHeap->pos[minHeap->array[
+                             (i-1)/2]->v] = i;
+        swapMinHeapNode(&minHeap->array[i],  
+                 &minHeap->array[(i - 1) / 2]);
+  
+        // move to parent index
+        i = (i - 1) / 2;
+    }
+}
+
+/**
+ * @brief // A utility function to check if a given vertex. '1' is in min heap or not
+ * 
+ * @param minHeap 
+ * @param v 
+ * @return int 
+ */
+int isInMinHeap(struct MinHeap *minHeap, int v)
+{
+   if (minHeap->pos[v] < minHeap->size)
+     return 1;
+   return 0;
+}
+
+s
+  

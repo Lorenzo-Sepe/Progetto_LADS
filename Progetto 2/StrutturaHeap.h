@@ -13,7 +13,6 @@ typedef struct MinHeapNode* NodoHeap;
 // Structure to represent a min heap with an array
 struct MinHeap
 {
-      
     // Number of heap nodes present currently
     int size;     
     
@@ -22,7 +21,7 @@ struct MinHeap
     
     // This is needed for decreaseKey()
     int *pos;    
-    struct MinHeapNode **array;
+    NodoHeap *array;
 };
  
 typedef struct MinHeap* HeapMinimo;
@@ -33,7 +32,8 @@ void swapMinHeapNode(NodoHeap* a, NodoHeap* b);
 void minHeapify(HeapMinimo minHeap, int idx);
 int HeapisEmpty(HeapMinimo minHeap);
 NodoHeap extractMin(HeapMinimo minHeap);
+void decreaseKey(struct MinHeap* minHeap, int v, int dist);
+int isInMinHeap(struct MinHeap *minHeap, int v);
 
-
- #endif // MACRO
+#endif // MACRO
   
