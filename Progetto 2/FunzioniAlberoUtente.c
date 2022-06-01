@@ -26,7 +26,7 @@ AlberoUtenti RicercaMinimoUtenti( AlberoUtenti RadiceInput){
  * @param PasswordInput 
  * @param RADICE 
  */
-AlberoUtenti Ins_OrdUtenti(char *MailInput, char *PasswordInput, float SaldoInput, AlberoUtenti RADICE){ //Costruisce un albero binario di ricerca	
+AlberoUtenti Ins_OrdUtenti(char *MailInput, char *PasswordInput, int SaldoInput, AlberoUtenti RADICE){ //Costruisce un albero binario di ricerca	
     //AlberoUtenti *aux;
     if (RADICE==NULL) { 
 		//printf("SIGNAL2");         
@@ -67,9 +67,9 @@ AlberoUtenti LetturaDaFileUtenti(FILE *fp, AlberoUtenti RADICE)
 	//printf("SIGNAL3");
 	char MaiInput[MAX_STRINGHE];
 	char PasswordInput[MAX_STRINGHE];
-    float SaldoInput;
+    int SaldoInput;
 	//AlberoUtenti nodo;
-	while (fscanf(fp,"%s %s %f", MaiInput, PasswordInput, &SaldoInput) == 3) 
+	while (fscanf(fp,"%s %s %d", MaiInput, PasswordInput, &SaldoInput) == 3) 
 	{
 		RADICE = Ins_OrdUtenti(MaiInput, PasswordInput, SaldoInput, RADICE);                                                                                                                                                                                                                                                                                      
 	}
@@ -90,7 +90,7 @@ void CreazioneFILERisultatoUtenti(FILE *fp, AlberoUtenti RADICE){
 
 		fprintf(fp,"%s ", RADICE->Mail);
 		fprintf(fp,"%s ", RADICE->Password);
-		fprintf(fp,"%f ", RADICE->Saldo);
+		fprintf(fp,"%d ", RADICE->Saldo);
 		fprintf(fp,"\n");
     } 
 }
@@ -129,7 +129,7 @@ void DeallocaAlberoUtenti(AlberoUtenti Radice){
  * @param NodoInput 
  * @param ValoreInput 
  */
-AlberoUtenti AggiungiAlSaldo(AlberoUtenti NodoInput, float ValoreInput){
+AlberoUtenti AggiungiAlSaldo(AlberoUtenti NodoInput, int ValoreInput){
     NodoInput->Saldo = (NodoInput->Saldo) + ValoreInput;
 	printf("Importo aggiornato.");
 	return NodoInput;
@@ -141,7 +141,7 @@ AlberoUtenti AggiungiAlSaldo(AlberoUtenti NodoInput, float ValoreInput){
  * @param NodoInput 
  * @param ValoreInput 
  */
-AlberoUtenti SottraiAlSaldo(AlberoUtenti NodoInput, float ValoreInput){
+AlberoUtenti SottraiAlSaldo(AlberoUtenti NodoInput, int ValoreInput){
     NodoInput->Saldo = (NodoInput->Saldo) - ValoreInput;
 	printf("Importo aggiornato.");
 	return NodoInput;

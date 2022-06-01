@@ -9,9 +9,7 @@
  */
 NodoHeap newMinHeapNode(int v, int dist)
 {
-    NodoHeap minHeapNode =
-           (NodoHeap) 
-      malloc(sizeof(struct MinHeapNode));
+    NodoHeap minHeapNode = (NodoHeap) malloc(sizeof(struct MinHeapNode));
     minHeapNode->v = v;
     minHeapNode->dist = dist;
     return minHeapNode;
@@ -76,8 +74,7 @@ void minHeapify(HeapMinimo minHeap, int idx)
         minHeap->pos[idxNode->v] = smallest;
   
         // Swap nodes
-        swapMinHeapNode(&minHeap->array[smallest], 
-                         &minHeap->array[idx]);
+        swapMinHeapNode(&minHeap->array[smallest], &minHeap->array[idx]);
   
         minHeapify(minHeap, smallest);
     }
@@ -102,15 +99,14 @@ int HeapisEmpty(HeapMinimo minHeap)
  */
 NodoHeap extractMin(HeapMinimo minHeap)
 {
-    if (isEmpty(minHeap))
+    if (HeapisEmpty(minHeap))
         return NULL;
   
     // Store the root node
     NodoHeap root = minHeap->array[0];
   
     // Replace root node with last node
-    NodoHeap lastNode = 
-         minHeap->array[minHeap->size - 1];
+    NodoHeap lastNode = minHeap->array[minHeap->size - 1];
     minHeap->array[0] = lastNode;
   
     // Update position of last node
@@ -145,12 +141,9 @@ void decreaseKey(HeapMinimo minHeap, int v, int dist)
     while (i && minHeap->array[i]->dist < minHeap->array[(i - 1) / 2]->dist)
     {
         // Swap this node with its parent
-        minHeap->pos[minHeap->array[i]->v] = 
-                                      (i-1)/2;
-        minHeap->pos[minHeap->array[
-                             (i-1)/2]->v] = i;
-        swapMinHeapNode(&minHeap->array[i],  
-                 &minHeap->array[(i - 1) / 2]);
+        minHeap->pos[minHeap->array[i]->v] = (i-1)/2;
+        minHeap->pos[minHeap->array[(i-1)/2]->v] = i;
+        swapMinHeapNode(&minHeap->array[i], &minHeap->array[(i - 1) / 2]);
   
         // move to parent index
         i = (i - 1) / 2;
@@ -171,5 +164,108 @@ int isInMinHeap(struct MinHeap *minHeap, int v)
    return 0;
 }
 
-s
+NodoHeapFloat newMinHeapNode(int v, float cost){
+    NodoHeapFloat MinHeapNode = (NodoHeapFloat) malloc(sizeof(struct MinHeapNodeFloat));
+    MinHeapNode->v = v;
+    MinHeapNode->cost = cost;
+    return MinHeapNode;
+}
+
+HeapFloat createMinHeap(int capacity){
+    HeapFloat minHeap = (HeapFloat) malloc(sizeof(struct MinHeapFloat));
+    minHeap->pos = (int *)malloc(capacity * sizeof(int));
+    minHeap->size = 0;
+    minHeap->capacity = capacity;
+    minHeap->array = (NodoHeapFloat*) malloc(capacity * sizeof(NodoHeapFloat));
+    return minHeap;
+}
+
+void swapMinHeapNodeFloat(NodoHeapFloat* a, NodoHeapFloat* b){
+    NodoHeap t = *a;
+    *a = *b;
+    *b = t;
+}
+
+void minHeapify(HeapFloat minHeap, int idx){
+    int smallest, left, right;
+    smallest = idx;
+    left = 2 * idx + 1;
+    right = 2 * idx + 2;
+  
+    if (left < minHeap->size && minHeap->array[left]->cost < minHeap->array[smallest]->cost )
+      smallest = left;
+  
+    if (right < minHeap->size && minHeap->array[right]->cost < minHeap->array[smallest]->cost )
+      smallest = right;
+  
+    if (smallest != idx)
+    {
+        // The nodes to be swapped in min heap
+        NodoHeapFloat smallestNode = minHeap->array[smallest];
+        NodoHeapFloat idxNode = minHeap->array[idx];
+  
+        // Swap positions
+        minHeap->pos[smallestNode->v] = idx;
+        minHeap->pos[idxNode->v] = smallest;
+  
+        // Swap nodes
+        swapMinHeapNode(&minHeap->array[smallest], &minHeap->array[idx]);
+
+        minHeapify(minHeap, smallest);
+    }
+}
+
+int HeapisEmpty(HeapFloat minHeap){
+    return minHeap->size == 0;
+}
+
+NodoHeapFloat extractMin(HeapFloat minHeap){
+    if (HeapisEmpty(minHeap))
+        return NULL;
+  
+    // Store the root node
+    NodoHeap root = minHeap->array[0];
+  
+    // Replace root node with last node
+    NodoHeap lastNode = minHeap->array[minHeap->size - 1];
+    minHeap->array[0] = lastNode;
+  
+    // Update position of last node
+    minHeap->pos[root->v] = minHeap->size-1;
+    minHeap->pos[lastNode->v] = 0;
+  
+    // Reduce heap size and heapify root
+    --minHeap->size;
+    minHeapify(minHeap, 0);
+  
+    return root;
+}
+
+void decreaseKeyFloat(struct MinHeapFloat* minHeap, int v, float cost){
+    // Get the index of v in  heap array
+    int i = minHeap->pos[v];
+  
+    // Get the node and update its dist value
+    minHeap->array[i]->cost = cost;
+  
+    // Travel up while the complete 
+    // tree is not hepified.
+    // This is a O(Logn) loop
+    while (i && minHeap->array[i]->cost < minHeap->array[(i - 1) / 2]->cost)
+    {
+        // Swap this node with its parent
+        minHeap->pos[minHeap->array[i]->v] = (i-1)/2;
+        minHeap->pos[minHeap->array[(i-1)/2]->v] = i;
+        swapMinHeapNode(&minHeap->array[i], &minHeap->array[(i - 1) / 2]);
+  
+        // move to parent index
+        i = (i - 1) / 2;
+    }
+}
+
+int isInMinHeap(struct MinHeapFloat *minHeap, int v){
+    if (minHeap->pos[v] < minHeap->size)
+        return 1;
+    return 0;
+}
   
