@@ -1,9 +1,6 @@
 #ifndef STRUTTURE_H
 #define STRUTTURE_H
 #define MAX_STRINGHE 1000
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
 //Definizione struttura albero per gli Utenti
 struct Utente {

@@ -118,7 +118,7 @@ void DeallocaAlberoUtenti(AlberoUtenti Radice){
  {	if (RADICE!=NULL) {
 		InorderUtenti(RADICE->SX);
 		printf("Informazioni Utente: \nMail: %s.\nSaldo: %.2f.\n",RADICE->Mail,RADICE->Saldo);
-        //stampaListaDeiDesideri(RADICE->ListaDesideri);                                                correggere                  ++++++++++++++++++++++++++
+        stampaListaDeiDesideri(RADICE->ListaDesideri);
 		InorderUtenti(RADICE->DX); 
     }    
 }
