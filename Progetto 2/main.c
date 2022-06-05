@@ -5,6 +5,8 @@
 #include "StrutturaAlberoUtente.h"
 #include "StrutturaGrafi.h"
 
+#define INT_MAX 9999
+
 int main(int argc, char const *argv[])
 {
     AlberoUtenti Clienti = NULL, ClienteCorrente = NULL;
@@ -15,10 +17,10 @@ int main(int argc, char const *argv[])
     FILE *fpOutCollegamentiAereoNodi, *fpOutCollegamentiAereoArchi;
     FILE *fpInCollegamentiTrenoNodi, *fpInCollegamentiTrenoArchi;
     FILE *fpOutCollegamentiTrenoNodi, *fpOutCollegamentiTrenoArchi;
+    FILE *fpInCheck, *fpOutCheck;
     char Scelta[MAX_STRINGHE], MailInput[MAX_STRINGHE], PasswordInput[MAX_STRINGHE],NomeInput[MAX_STRINGHE], TappaInput[MAX_STRINGHE],SRCInput[MAX_STRINGHE],DESTInput[MAX_STRINGHE];
     char FileAlberghiNodi[MAX_STRINGHE],FileAlberghiArchi[MAX_STRINGHE];
-    int i, selector=0, DistanzaInput,IndexInput;
-    int repeat = 1;
+    int i, selector=0, DistanzaInput,IndexInput,repeat = 1,checkIsolatoAereo,checkIsolatoTreno;
     float CostoInput,PrezzoFinale,ImportoInput;
 
     fpInClienti = fopen("ClientiRegistrati.txt","r");
@@ -85,6 +87,24 @@ int main(int argc, char const *argv[])
 
     if (strcmp(ClienteCorrente->Mail,"ADMIN") == 0)
     {
+        fpInCheck = fopen("CheckAereo.txt","r");
+        if (fpInCheck==NULL) exit(-1);
+        fscanf(fpInCheck,"%d",checkIsolatoAereo);
+        fclose(fpInCheck);
+        if (checkIsolatoAereo==1)
+        {   printf("Per il grafo degli Aerei:");
+            checkIsolatoAereo = grafoSconnesso(CollegamentiAereo);
+        }
+
+        fpInCheck = fopen("CheckTreno.txt","r");
+        if (fpInCheck==NULL) exit(-1);
+        fscanf(fpInCheck,"%d",checkIsolatoTreno);
+        fclose(fpInCheck);
+        if (checkIsolatoTreno==1)
+        {   printf("Per il grafo degli Treni:");
+            checkIsolatoTreno = grafoSconnesso(CollegamentiTreno);
+        }
+
         //check per aggiungere i collegamenti necessari
         printf("Benvenuto nella sezione amministrativa del applicazione.\nInserire il corrispettivo codice per eseguire una delle azioni qui riportate:\n");
         printf("0 - Aggiungi una Tappa. \n");
@@ -117,6 +137,7 @@ int main(int argc, char const *argv[])
                 CollegamentiAereo=g_insert(CollegamentiAereo, TappaInput);
                 CollegamentiTreno=g_insert(CollegamentiTreno, TappaInput);
                 //check grafo connesso per i collegamenti
+                checkIsolatoAereo = grafoSconnesso(CollegamentiAereo);
                 break;
             case 1:
                 printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
@@ -125,7 +146,8 @@ int main(int argc, char const *argv[])
                 IndexInput=get_Indice_from_Nome(CollegamentiAereo, TappaInput);
                 CollegamentiAereo=EliminazioneLogicaNodo(CollegamentiAereo,IndexInput); 
                 CollegamentiTreno=EliminazioneLogicaNodo(CollegamentiTreno,IndexInput); 
-                //check grafo connesso per i collegamenti                
+                //check grafo connesso per i collegamenti 
+                checkIsolatoAereo = grafoSconnesso(CollegamentiAereo);               
                 break;
 
             case 2:
@@ -312,7 +334,7 @@ int main(int argc, char const *argv[])
                     strcpy(TappaInput,FormattazioneTappe(TappaInput));  
                     strcpy(NomeInput,FormattazioneTappe(NomeInput));  
 
-                     //Load albergo giusto in memoria
+                    //Load albergo giusto in memoria
                     CollegamentiAlberghi=LoadAlberghi(CollegamentiAlberghi,TappaInput);
 
                     nomina_nodo(CollegamentiAlberghi,IndexInput,NomeInput);
@@ -327,6 +349,16 @@ int main(int argc, char const *argv[])
                 break;
             }
 
+        checkIsolatoAereo=grafoSconnesso(CollegamentiAereo);
+        checkIsolatoTreno=grafoSconnesso(CollegamentiTreno);
+        
+        fpOutCheck = fopen("Check.txt","w+");
+        if (fpOutCheck==NULL) exit(-1);
+        fprintf(fpOutCheck,"%d\n",checkIsolatoAereo);
+        fprintf(fpOutCheck,"%d\n",checkIsolatoTreno);
+        
+        fclose(fpOutCheck);
+        
         printf("Continuare? O = No/1 = Si: ");
         scanf("%d",&repeat);
         }
@@ -338,8 +370,9 @@ int main(int argc, char const *argv[])
         printf("1 - Visualizza albergi per Tappa.\n");
         printf("2 - Prenota viaggio in Aereo.\n");
         printf("3 - Prenota viaggio in Treno.\n");
-
-        while (repeat == 1 && selector<4)
+        printf("4 - Aggiungere al Saldo.\n");
+        printf("5 - Visualizzare il saldo.\n");
+        while (repeat == 1 && selector<6)
         {
             printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
             printf("Inserire il codice: ");
@@ -370,58 +403,64 @@ int main(int argc, char const *argv[])
                     printf("Scrivere la citta' di arrivo: ");
                     gets(DESTInput);
                     strcpy(DESTInput,FormattazioneTappe(DESTInput));
-                    printf("Vuoi prenotare il viaggio in base al Costo o la Distanza? C - costo, D - distanza\n");
-                    scanf("%s",&Scelta);
-                    if (strcp(Scelta,"C") == 0 || strcp(Scelta,"c") == 0)
+                    checkIsolatoAereo = nodo_isolato(CollegamentiAereo,get_Indice_from_Nome(CollegamentiAereo,DESTInput));
+                    if (checkIsolatoAereo == 1)
                     {
-                        dijkstraCosto(CollegamentiAereo, get_Indice_from_Nome(CollegamentiAereo,SRCInput) );
+                        printf("La Tappa da lei selezionata non è raggiungibile.\n");
                     }
                     else
                     {
-                        dijkstraDistanza(CollegamentiAereo,get_Indice_from_Nome(CollegamentiAereo, SRCInput) );
-                    }
-                    //da memorizzare il costo del biglietto finale
+                        printf("Vuoi prenotare il viaggio in base al Costo o la Distanza? C - costo, D - distanza\n");
+                        scanf("%s",&Scelta);
+                        //Load albergo giusto in memoria
+                        CollegamentiAlberghi=LoadAlberghi(CollegamentiAlberghi,SRCInput);
 
-                    //Load albergo giusto in memoria
-                    CollegamentiAlberghi=LoadAlberghi(CollegamentiAlberghi,SRCInput);
-
-                    stamapVettoreAdiacenza(CollegamentiAlberghi);
-
-                    printf("In quale Albergo si desidera fermare?\n");
-                    gets(TappaInput);
-
-                    //da modificare una volta finito Dijktra
-                    dijkstraDistanza(CollegamentiAlberghi,0);
-
-                    printf("Vuoi procedere all'aquisto? [Y/n]"); 
-                    scanf("%s", &Scelta);
-                    if (strcmp(Scelta,"y")==0 || strcmp(Scelta,"Y") == 0){
-                        if (ClienteCorrente->Saldo>PrezzoFinale)
-                        {
-                            Clienti = SottraiAlSaldo(ClienteCorrente,PrezzoFinale);
-                        
-						    printf("Operazione completata.\n");
+                        if (strcp(Scelta,"C") == 0 || strcp(Scelta,"c") == 0)
+                        {   //Costo
+                            PrezzoFinale=dijkstraCosto(CollegamentiAereo, get_Indice_from_Nome(CollegamentiAereo,SRCInput), get_Indice_from_Nome(CollegamentiAereo,DESTInput));
                         }
                         else
                         {
-                            printf("Operazione non riuscita perche' il saldo e' troppo basso. Aggiornare il saldo? [Y/n]");
-                            scanf("%s", &Scelta);
-                            if (strcmp(Scelta,"y")==0 || strcmp(Scelta,"Y")==0)
+                          PrezzoFinale=dijkstraDistanza(CollegamentiAereo,get_Indice_from_Nome(CollegamentiAereo, SRCInput), get_Indice_from_Nome(CollegamentiAereo,DESTInput));
+                        }
+                    
+                        stamapVettoreAdiacenza(CollegamentiAlberghi);
+
+                        printf("In quale Albergo si desidera fermare?\n");
+                        gets(TappaInput);
+
+                        PrezzoFinale += dijkstraDistanza(CollegamentiAlberghi,0,get_Indice_from_Nome(CollegamentiAlberghi,TappaInput));
+
+                        printf("Vuoi procedere all'aquisto? [Y/n]"); 
+                        scanf("%s", &Scelta);
+                        if (strcmp(Scelta,"y")==0 || strcmp(Scelta,"Y") == 0){
+                            if (ClienteCorrente->Saldo>PrezzoFinale)
                             {
-                                printf("Inserire l'importo: euro ");
-                                scanf("%f", &ImportoInput);
-                                Clienti = AggiungiAlSaldo(ClienteCorrente,ImportoInput); 
-                                Clienti = SottraiAlSaldo(ClienteCorrente,PrezzoFinale);    
-							
-						    	printf("Operazione completata.\n"); 
+                                Clienti = SottraiAlSaldo(ClienteCorrente,PrezzoFinale);
+                        
+					    	    printf("Operazione completata.\n");
                             }
-                        }     
+                            else
+                            {
+                                printf("Operazione non riuscita perche' il saldo e' troppo basso. Aggiornare il saldo? [Y/n]");
+                                scanf("%s", &Scelta);
+                                if (strcmp(Scelta,"y")==0 || strcmp(Scelta,"Y") == 0)
+                                {
+                                    printf("Inserire l'importo: euro ");
+                                    scanf("%f", &ImportoInput);
+                                    Clienti = AggiungiAlSaldo(ClienteCorrente,ImportoInput); 
+                                    Clienti = SottraiAlSaldo(ClienteCorrente,PrezzoFinale);    
+							
+						    	    printf("Operazione completata.\n"); 
+                                }
+                            }     
+                        }
+                        else
+                        {
+                            printf("Operazione annullata.\n");
+                        }
                     }
-                    else
-                    {
-                        printf("Operazione annullata.\n");
-                    }
-                
+                    
                     printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
                 break;
 
@@ -433,54 +472,90 @@ int main(int argc, char const *argv[])
                     printf("Scrivere la citta' di arrivo: ");
                     gets(DESTInput);
                     strcpy(DESTInput,FormattazioneTappe(DESTInput));
-                    printf("Vuoi prenotare il viaggio in base al Costo o la Distanza? C - costo, D - distanza\n");
-                    scanf("%s",&Scelta);
-                    if (strcp(Scelta,"C") == 0 || strcp(Scelta,"c") == 0)
+                    checkIsolatoTreno = nodo_isolato(CollegamentiTreno, get_Indice_from_Nome(CollegamentiTreno,DESTInput));
+                    if (checkIsolatoTreno == 1)
                     {
-                        dijkstraCosto(CollegamentiTreno, get_Indice_from_Nome(CollegamentiTreno,SRCInput) );
+                        printf("La tappa da lei selezionata non è raggiungibile in Treno.\n");
                     }
                     else
                     {
-                        dijkstraDistanza(CollegamentiTreno,get_Indice_from_Nome(CollegamentiTreno, SRCInput) );
-                    }
-                    //da memorizzare il costo del biglietto finale
-                    printf("Vuoi procedere all'aquisto? [Y/n]"); 
-                    scanf("%s", &Scelta);
-                    if (strcmp(Scelta,"y")==0 || strcmp(Scelta,"Y") == 0){
-                        if (ClienteCorrente->Saldo>PrezzoFinale)
+                        printf("Vuoi prenotare il viaggio in base al Costo o la Distanza? C - costo, D - distanza\n");
+                        scanf("%s",&Scelta);
+                        if (strcp(Scelta,"C") == 0 || strcp(Scelta,"c") == 0)
                         {
-                            Clienti = SottraiAlSaldo(ClienteCorrente,PrezzoFinale);
-                        
-						    printf("Operazione completata.\n");
+                            PrezzoFinale = dijkstraCosto(CollegamentiTreno, get_Indice_from_Nome(CollegamentiTreno,SRCInput), get_Indice_from_Nome(CollegamentiTreno,DESTInput));
                         }
                         else
                         {
-                            printf("Operazione non riuscita perche' il saldo e' troppo basso. Aggiornare il saldo? [Y/n]");
-                            scanf("%s", &Scelta);
-                            if (strcmp(Scelta,"y")==0 || strcmp(Scelta,"Y")==0)
-                            {
-                                printf("Inserire l'importo: euro ");
-                                scanf("%f", &ImportoInput);
-                                Clienti = AggiungiAlSaldo(ClienteCorrente,ImportoInput); 
-                                Clienti = SottraiAlSaldo(ClienteCorrente,PrezzoFinale);    
-							
-						    	printf("Operazione completata.\n"); 
-                            }
-                        }     
-                    }
-                    else
-                    {
-                        printf("Operazione annullata.\n");
-                    }
-                
-                    printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+                            PrezzoFinale = dijkstraDistanza(CollegamentiTreno,get_Indice_from_Nome(CollegamentiTreno, SRCInput), get_Indice_from_Nome(CollegamentiTreno,DESTInput));
+                        }
 
-                    break;        
+                        stamapVettoreAdiacenza(CollegamentiAlberghi);
+
+                        printf("In quale Albergo si desidera fermare?\n");
+                        gets(TappaInput);
+
+                        PrezzoFinale += dijkstraDistanza(CollegamentiAlberghi,1,get_Indice_from_Nome(CollegamentiAlberghi,TappaInput));
+
+                        printf("Vuoi procedere all'aquisto? [Y/n]"); 
+                        scanf("%s", &Scelta);
+                        if (strcmp(Scelta,"y")==0 || strcmp(Scelta,"Y") == 0){
+                            if (ClienteCorrente->Saldo>PrezzoFinale)
+                            {
+                                Clienti = SottraiAlSaldo(ClienteCorrente,PrezzoFinale);
+                        
+						        printf("Operazione completata.\n");
+                            }
+                            else
+                            {
+                                printf("Operazione non riuscita perche' il saldo e' troppo basso. Aggiornare il saldo? [Y/n]");
+                                scanf("%s", &Scelta);
+                                if (strcmp(Scelta,"y")==0 || strcmp(Scelta,"Y") == 0)
+                                {
+                                    printf("Inserire l'importo: euro ");
+                                    scanf("%f", &ImportoInput);
+                                    Clienti = AggiungiAlSaldo(ClienteCorrente,ImportoInput); 
+                                    Clienti = SottraiAlSaldo(ClienteCorrente,PrezzoFinale);    
+							
+						        	printf("Operazione completata.\n"); 
+                                }
+                            }     
+                        }
+                        else
+                        {
+                            printf("Operazione annullata.\n");
+                        }
+                    }
+                    
+                
+                printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+
+                break; 
+            case 4:
+                printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+                printf("Inserire l'importo: euro ");
+                scanf("%f", &ImportoInput);
+                AggiungiAlSaldo(ClienteCorrente,ImportoInput);
+                
+                printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+                break;
+            case 5:
+                printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+            	printf("Il saldo corrente del cliente e': %.2f ",ClienteCorrente->Saldo);
+            	printf("\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< || >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+                
+                break;                   
             default:
                 printf("Operazioni terminate.");
                 repeat=0; 
                 break;
             }
+
+            fpOutCheck = fopen("Check.txt","w+");
+            if (fpOutCheck==NULL) exit(-1);
+            fprintf(fpOutCheck,"%d\n",checkIsolatoAereo);
+            fprintf(fpOutCheck,"%d\n",checkIsolatoTreno);
+            fclose(fpOutCheck);
 
             printf("Continuare? O = No/1 = Si: ");
             scanf("%d",&repeat);
