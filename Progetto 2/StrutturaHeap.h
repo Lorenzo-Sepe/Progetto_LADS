@@ -35,5 +35,39 @@ NodoHeap extractMin(HeapMinimo minHeap);
 void decreaseKey(struct MinHeap* minHeap, int v, int dist);
 int isInMinHeap(struct MinHeap *minHeap, int v);
 
+// Structure to represent a min heap node using float type
+struct MinHeapNodeFloat
+{
+    int  v;
+    float cost;
+};
+  
+typedef struct MinHeapNodeFloat* NodoHeapFloat;
+
+// Structure to represent a min heap with an array
+struct MinHeapFloat
+{
+    // Number of heap nodes present currently
+    int size;     
+    
+    // Capacity of min heap
+    int capacity;  
+    
+    // This is needed for decreaseKey()
+    int *pos;    
+    NodoHeapFloat *array;
+};
+ 
+typedef struct MinHeapFloat* HeapMinimoFloat;
+
+NodoHeapFloat newMinHeapNodeFloat(int v, float cost);
+HeapMinimoFloat createMinHeapFloat(int capacity);
+void swapMinHeapNodeFloat(NodoHeapFloat* a, NodoHeapFloat* b);
+void minHeapifyFloat(HeapMinimoFloat minHeap, int idx);
+int HeapisEmptyFloat(HeapMinimoFloat minHeap);
+NodoHeapFloat extractMinFloat(HeapMinimoFloat minHeap);
+void decreaseKeyFloat(HeapMinimoFloat minHeap, int v, float cost);
+int isInMinHeapFloat(HeapMinimoFloat minHeap, int v);
+
 #endif // MACRO
   

@@ -9,6 +9,13 @@
 #define grigio 1 
 #define nero 2 
 
+/**
+ * @brief 
+ * 
+ * @param g 
+ * @param nodo 
+ * @return int 
+ */
 int nodo_isolato(MappaCollegamenti g, int nodo)
 {
 	if(g==NULL)
@@ -17,6 +24,35 @@ int nodo_isolato(MappaCollegamenti g, int nodo)
 		return 1;
 	
 	return 0;
+}
+
+/**
+ * @brief funzione che controlla ogni nodo di un grafo e controlla se è isolato dal resto
+ * 
+ * @param grafoInput 
+ * @return int 
+ */
+int grafoSconnesso(MappaCollegamenti grafoInput){
+    if (grafoInput == NULL)
+    {
+        printf("Grafo vuoto. Impossibile eseguire l'operazione\n");
+        return 1;
+    }
+    int i;
+    int check = 0;
+    char ris[MAX_STRINGHE];
+    for ( i = 0; i < grafoInput->NumeroNodi; i++)
+    {
+        check = nodo_isolato(grafoInput,i);
+        if (check == 1)
+        {
+            strcpy(ris,get_Nome_from_Indice(grafoInput,i));
+            printf("La Tappa %s e' isolata\n", ris);
+        }
+        
+    }
+
+    return check;
 }
 
 /**
@@ -76,15 +112,10 @@ MappaCollegamenti LetturaDaFILEGrafoCollegamenti (FILE *fp, MappaCollegamenti Gr
 
 
 /**
-
  * @brief funzione ausiliaria che stampa gli archi e i loro pesi
-
  *
-
  * @param fpArchi
-
  * @param GrafoInput
-
  */
 void CreazioneFILEGrafoArchi(FILE *fpArchi, MappaCollegamenti GrafoInput){
 
@@ -93,29 +124,20 @@ void CreazioneFILEGrafoArchi(FILE *fpArchi, MappaCollegamenti GrafoInput){
     ArchiGrafo edge;
 
     if (!getEmpty(GrafoInput))
-
     {
 
         for ( i = 0; i < GrafoInput->NumeroNodi; i++)
-
         {
-
             edge=GrafoInput->ListaAdiacenza[i].head;
 
             while (edge!=NULL)
-
             {
-
                 fprintf(fpArchi, "%d %d %d %g %d\n", i, edge->key, edge->distanza, edge->costo, edge->visibilita);
 
                 edge=edge->next;
-
             }
-
         }
-
     }
-
 }
 
 /**
@@ -161,8 +183,7 @@ void CreazioneFILEGrafoNodi(FILE *fpNodi, MappaCollegamenti GrafoInput){
  * @return MappaCollegamenti
 
  */
-
-struct GrafoCollegamenti* LetturaDaFILEGrafo(FILE *fpNodi, FILE *fpArchi, struct GrafoCollegamenti *GrafoInput)
+MappaCollegamenti LetturaDaFILEGrafo(FILE *fpNodi, FILE *fpArchi, struct GrafoCollegamenti *GrafoInput)
 {
 	GrafoInput = LetturaDaFILEGrafoNodi(fpNodi);
 	if(fpArchi!=NULL)
@@ -171,6 +192,12 @@ struct GrafoCollegamenti* LetturaDaFILEGrafo(FILE *fpNodi, FILE *fpArchi, struct
     return GrafoInput;
 }
 
+/**
+ * @brief funzione usata per formattare le stringhe delle tappe in modo tale che abbiano l'iniziale maiuscola
+ * 
+ * @param TappaInput 
+ * @return char* 
+ */
 char* FormattazioneTappe(char* TappaInput){
     int i;
     
@@ -230,6 +257,17 @@ MappaCollegamenti crea_grafo_vuoto(int NumeroNodiInput){
     return Grafo;
 }
 
+// Function to print shortest path from source to j using
+// parent array
+void printPath(int parent[], int j)
+{
+    // Base Case : If j is source
+    if (parent[j] == -1)
+        return;
+    printPath(parent, parent[j]);
+    printf("%d ", j);
+}
+
 /**
  * @brief A utility function used to print the solution
  * 
@@ -240,7 +278,7 @@ void printArr(int dist[], int n)
 {
     printf("Vertex   Distance from Source\n");
     for (int i = 0; i < n; ++i)
-		if(dist[i]==9999)
+		if(dist[i]==INT_MAX)
 			printf("Nodo Irraggiungibile\n");
 		else
 			printf("%d \t\t %d\n", i, dist[i]);
@@ -252,14 +290,14 @@ void printArr(int dist[], int n)
  * @param dist 
  * @param n 
  */
-void printArrFloat(float dist[], int n)
+void printArrFloat(float cost[], int n)
 {
     printf("Vertex   Distance from Source\n");
     for (int i = 0; i < n; ++i)
-		if(dist[i]==9999)
+		if(cost[i]==INT_MAX)
 			printf("Nodo Irraggiungibile\n");
 		else
-			printf("%d \t\t %.2f\n", i, dist[i]);
+			printf("%d \t\t %.2f\n", i, cost[i]);
 }
 
 /**
@@ -311,6 +349,47 @@ GrafoInput->NumeroNodi = GrafoInput->NumeroNodi+1;
 }
 
 /**
+ * @brief cancellazione fisica di un nodo di un grafo
+ * 
+ * @param GrafoInput 
+ * @param IndexInput 
+ * @return MappaCollegamenti 
+ */
+MappaCollegamenti g_delete(MappaCollegamenti GrafoInput, int IndexInput)
+{
+    int i;
+    struct AdjList *NuovaLista;
+    ArchiGrafo Target;
+
+    if (GrafoInput == NULL) {
+       printf("Grafo vuoto.");
+       return NULL;
+    }
+
+    NuovaLista = realloc(GrafoInput->ListaAdiacenza, (GrafoInput->NumeroNodi-1) * sizeof(ArchiGrafo));
+    if (NuovaLista ==NULL)  
+    printf("ERRORE: impossibile reallocare memoria \n");
+    else
+    {
+        if (i != IndexInput)
+        {
+            NuovaLista[i].head = GrafoInput->ListaAdiacenza[i].head;
+            strcpy(NuovaLista[i].NomeTappa, GrafoInput->ListaAdiacenza[i].NomeTappa);
+            NuovaLista[i].visibilita = GrafoInput->ListaAdiacenza[i].visibilita;
+        }    
+    }
+    GrafoInput->NumeroNodi--;
+    for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+    {
+        Target = Ricerca_Vertice_In_Adj(GrafoInput->ListaAdiacenza[i].head, IndexInput);
+        eliminaNodoListaAdj(GrafoInput->ListaAdiacenza[i].head,Target);
+    }
+    
+    GrafoInput->ListaAdiacenza=NuovaLista;
+    return GrafoInput;
+}
+
+/**
  * @brief rende il nodo designato invisibile e dealloca la sua lista di adiacenza
  * 
  * @param GrafoInput 
@@ -356,7 +435,7 @@ void stampa_grafo(MappaCollegamenti GrafoInput){
         for ( i = 0; i < GrafoInput->NumeroNodi; i++)
         {
 			if(GrafoInput->ListaAdiacenza[i].visibilita != 0){
-//				printf("Tappee adiacenti a %s->",GrafoInput->ListaAdiacenza[i].NomeTappa);
+//				printf("Tappe adiacenti a %s->",GrafoInput->ListaAdiacenza[i].NomeTappa);
 				printf("%s -> ",GrafoInput->ListaAdiacenza[i].NomeTappa);
 				edge=GrafoInput->ListaAdiacenza[i].head;
 				while (edge!=NULL)
@@ -463,6 +542,25 @@ void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, int distanza, flo
 }
 
 /**
+ * @brief rimuove un arco dal grafo
+ * 
+ * @param graph 
+ * @param src 
+ * @param dest 
+ */
+void Rimuovi_Arco(MappaCollegamenti graph, int src, int dest){
+    if (graph == NULL)
+    {
+        printf("Impossibile completare l'operazione, grafo Vuoto.");
+        return;
+    }
+    
+    ArchiGrafo NodoTarget;
+    NodoTarget = Ricerca_Vertice_In_Adj(graph->ListaAdiacenza[src].head, dest);
+    graph->ListaAdiacenza[src].head = eliminaNodoListaAdj(graph->ListaAdiacenza[src].head, NodoTarget);
+}
+
+/**
  * @brief restituisce la lunghezza della lista di adiacenza
  * 
  * @param head 
@@ -474,26 +572,6 @@ int lunghezzaListaAdj(ArchiGrafo head)
 	return 1 + lunghezzaListaAdj(head->next);
 }
 
-/**
- * @brief calcola il grado uscente di un nodo di un grafo orientato (è possibile usarlo per grafi non orientati senza cambiamenti) 
- * 
- * @param GrafoInput 
- * @param VerticeInput 
- * @return int 
- */
-int GradoUscita (MappaCollegamenti GrafoInput,int VerticeInput) {
-    if (GrafoInput==NULL)
-    {
-        printf("Grafo non esistente");
-        return -1;
-    }
-    else{
-        int ris;
-        ris = lunghezzaListaAdj(GrafoInput->ListaAdiacenza[VerticeInput].head);
-        return ris;
-    }
-	
-}
 
 /**
  * @brief restituisce 1 se il vertice di input appartiene all lista di adiacenza, 0 altrimenti, e NULL se la lista è vuota
@@ -502,16 +580,16 @@ int GradoUscita (MappaCollegamenti GrafoInput,int VerticeInput) {
  * @param VerticeInput 
  * @return int 
  */
-int Ricerca_Vertice_In_Adj (ArchiGrafo ListaInput, int VerticeInput){
+ArchiGrafo Ricerca_Vertice_In_Adj (ArchiGrafo ListaInput, int VerticeInput){
     if (ListaInput == NULL)
     {
         printf("Lista finita, risultato non trovato.");
-        return 0;
+        return NULL;
     }
 
     if (ListaInput->key == VerticeInput)
     {
-        return 1;
+        return ListaInput;
     }
     
     return Ricerca_Vertice_In_Adj(ListaInput->next,VerticeInput);
@@ -519,99 +597,32 @@ int Ricerca_Vertice_In_Adj (ArchiGrafo ListaInput, int VerticeInput){
 }
 
 /**
- * @brief calcola il grado di ingresso di un vertice in un grafo orientato (non usabile in grafi non orientati)
+ * @brief funzione ausiliaria che elimina un nodo da una lista diu adiacenza
  * 
- * @param GrafoInput 
- * @param VerticeInput 
- * @return int 
+ * @param head 
+ * @param nodo 
+ * @return ArchiGrafo 
  */
-int GradoIngresso (MappaCollegamenti GrafoInput, int VerticeInput){
-    int i = 0, ris = 0 ;
-    if (GrafoInput == NULL)
-    {
-        printf("Grafo non esistente");
-        return -1;
-    }
-    else{
-        
-            for (i = 0; i < GrafoInput->NumeroNodi; i++)
-            {
-                ris = ris + Ricerca_Vertice_In_Adj(GrafoInput->ListaAdiacenza[i].head,VerticeInput);
-            }
-            return ris;    
-    }   
-}
-
-/**
- * @brief aggiunge al vettore predecessore
- * 
- * @param GrafoInput 
- * @param i 
- * @param VettoreFlag 
- * @param VettorePred 
- */
-static void VGC_Visita(MappaCollegamenti GrafoInput,int i,int *VettoreFlag, ArchiGrafo *VettorePred){
-    ArchiGrafo edge;
-    VettoreFlag[i]=grigio;
-    for (edge = GrafoInput->ListaAdiacenza[i].head; edge ; edge=edge->next)
-    {
-        if (VettoreFlag[edge->key]==bianco)
-        {
-            VettorePred[edge->key]=GrafoInput->ListaAdiacenza[i].head; 
-            VGC_Visita(GrafoInput,edge->key,VettoreFlag,VettorePred);
-        }
-    }
-    VettoreFlag[i]=nero;
-}
-
-/**
- * @brief usando da DFS, verifica se un grafo è connesso, cioè se ogni vertice è raggiungibile da qualunque altro vertice. 1 = grafo connesso, 0 altrimenti.
- * 
- * @param GrafoInput 
- * @return int 
- */
-int VerificaGrafoConnesso(MappaCollegamenti GrafoInput)
+ArchiGrafo eliminaNodoListaAdj(ArchiGrafo head, ArchiGrafo nodo)
 {
-    int ris = 1;
-    if (GrafoInput == NULL)
-    {
-        printf("grafo inserito e' vuoto.");
-        return 0;
-    }
-    else
-    {
-        int i;
-        int *VettoreFlag=calloc(GrafoInput->NumeroNodi,sizeof(int));
-        ArchiGrafo *VettorePred = malloc(GrafoInput->NumeroNodi*sizeof(struct Tappa));
-        for ( i = 0; i < GrafoInput->NumeroNodi; i++)
-        {
-            VettorePred[i] = NULL; //inizializzazione vettore predecessore
-        }
-        
-        if (!VettoreFlag || !VettorePred) {
-            printf("Errore di allocazione.");
-        }
-        else {
-            for ( i = 0; i < GrafoInput->NumeroNodi; i++)
-            {
-                if(VettoreFlag[i] == bianco){
-                    VGC_Visita(GrafoInput,i,VettoreFlag,VettorePred);
-                }
-            }
-        }
-
-        for ( i = 0; i < GrafoInput->NumeroNodi; i++)
-        {
-            if(VettorePred[i] == NULL) {
-                ris=0;
-            }
-        }
-
-    free(VettoreFlag);
-    free(VettorePred);
-    return ris;
-    }
+	ArchiGrafo tmp;
+	
+	if (head == NULL || nodo == NULL) return head;
+	
+	if (head == nodo) {
+		tmp = head->next;
+		free(head);
+		return tmp;
+	}
+	
+	head->next = eliminaNodoListaAdj(head->next, nodo);
+	
+	return head;
 }
+
+
+
+
 
  
 /**
@@ -620,33 +631,32 @@ int VerificaGrafoConnesso(MappaCollegamenti GrafoInput)
  * @param graph 
  * @param src: la key del nodo sorgente
  */
-void dijkstraDistanza(MappaCollegamenti graph, int src)
+float dijkstraDistanza(MappaCollegamenti graph, int src, int dest)
 {     
     if (graph == NULL)
     {
         printf("Errore, Grafo vuoto.");
-        return;
+        return 0;
     }
-    
-    // Get the number of vertices in graph
-    int V = graph->NumeroNodi;
-    int v;
+    int i;
     // dist values used to pick
     // minimum weight edge in cut
-    int dist[V];     
-  
+    int dist[graph->NumeroNodi];     
+    int parent[graph->NumeroNodi];
+    float cost[graph->NumeroNodi];
     // minHeap represents set E
-    HeapMinimo minHeap = createMinHeap(V);
+    HeapMinimo minHeap = createMinHeap(graph->NumeroNodi);
   
-    // Initialize min heap with all 
-    // vertices. dist value of all vertices 
-    for (v = 0; v < V; ++v)
+    // Initialize min heap with all vertices. dist value of all vertices, cost array and parent array
+    for (i = 0; i < graph->NumeroNodi; ++i)
     {
-        dist[v] = INT_MAX;
-        minHeap->array[v] = newMinHeapNode(v, dist[v]);
-        minHeap->pos[v] = v;
+        parent[i]=-1;
+        cost[i] = 0;
+        dist[i] = INT_MAX;
+        minHeap->array[i] = newMinHeapNode(i, dist[i]);
+        minHeap->pos[i] = i;
     }
-  
+    
     // Make dist value of src vertex 
     // as 0 so that it is extracted first
     minHeap->array[src] = newMinHeapNode(src, dist[src]);
@@ -654,8 +664,8 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
     dist[src] = 0;
     decreaseKey(minHeap, src, dist[src]);
   
-    // Initially size of min heap is equal to V
-    minHeap->size = V;
+    // Initially size of min heap is equal to NumeroNodi
+    minHeap->size = graph->NumeroNodi;
   
     // In the followin loop, 
     // min heap contains all nodes
@@ -668,35 +678,40 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
         NodoHeap minHeapNode = extractMin(minHeap);
         
         // Store the extracted vertex number
-        int u = minHeapNode->v; 
+        int NodoInVisita = minHeapNode->v; 
   
         // Traverse through all adjacent 
         // vertices of u (the extracted
         // vertex) and update 
         // their distance values
-        ArchiGrafo pCrawl = graph->ListaAdiacenza[u].head;
-        while (pCrawl != NULL)
+        ArchiGrafo VisitatorePercorso = graph->ListaAdiacenza[NodoInVisita].head;
+        while (VisitatorePercorso != NULL)
         {
-            int v = pCrawl->key;
+            int i = VisitatorePercorso->key;
   
             // If shortest distance to v is
             // not finalized yet, and distance to v
             // through u is less than its 
             // previously calculated distance
-            if (isInMinHeap(minHeap, v) && dist[u] != INT_MAX && pCrawl->distanza + dist[u] < dist[v])
+            if (isInMinHeap(minHeap, i) && dist[NodoInVisita] != INT_MAX && VisitatorePercorso->distanza + dist[NodoInVisita] < dist[i])
             {
-                dist[v] = dist[u] + pCrawl->distanza;
-  
+                parent[i] = NodoInVisita;
+                dist[i] = dist[NodoInVisita] + VisitatorePercorso->distanza;
+                cost[i] = cost[NodoInVisita] + VisitatorePercorso->costo;
                 // update distance 
+                // update cost
                 // value in min heap also
-                decreaseKey(minHeap, v, dist[v]);
+                decreaseKey(minHeap, i, dist[i]);
             }
-            pCrawl = pCrawl->next;
+            VisitatorePercorso = VisitatorePercorso->next;
         }
     }
   
     // print the calculated shortest distances
-    printArr(dist, V);
+    printArrFloat(cost, graph->NumeroNodi);
+    printArr(dist, graph->NumeroNodi);
+    printPath(parent,dest);
+    return cost[dest];
 }
 
 /**
@@ -705,83 +720,84 @@ void dijkstraDistanza(MappaCollegamenti graph, int src)
  * @param graph 
  * @param src: la key del nodo sorgente
  */
-void dijkstraCosto(MappaCollegamenti graph, int src)
+float dijkstraCosto(MappaCollegamenti graph, int src, int dest)
 {     
     if (graph == NULL)
     {
         printf("Errore, Grafo vuoto.");
-        return;
+        return 0;
     }
     
     // Get the number of vertices in graph
     int V = graph->NumeroNodi;
-    int v;
+    int i;
     // dist values used to pick
     // minimum weight edge in cut
-    float cost[V];     
+    float cost[graph->NumeroNodi];     
   
     // minHeap represents set E
-    HeapMinimo minHeap = createMinHeap(V);
+    HeapMinimoFloat minHeap = createMinHeapFloat(graph->NumeroNodi);
   
     // Initialize min heap with all 
     // vertices. dist value of all vertices 
-    for (v = 0; v < V; ++v)
+    for (i = 0; i < graph->NumeroNodi; ++i)
     {
-        cost[v] = INT_MAX;
-        minHeap->array[v] = newMinHeapNode(v, cost[v]);
-        minHeap->pos[v] = v;
+        cost[i] = INT_MAX;
+        minHeap->array[i] = newMinHeapNodeFloat(i, cost[i]);
+        minHeap->pos[i] = i;
     }
   
     // Make cost value of src vertex 
     // as 0 so that it is extracted first
-    minHeap->array[src] = newMinHeapNode(src, cost[src]);
+    minHeap->array[src] = newMinHeapNodeFloat(src, cost[src]);
     minHeap->pos[src] = src;
     cost[src] = 0;
-    decreaseKey(minHeap, src, cost[src]);
+    decreaseKeyFloat(minHeap, src, cost[src]);
   
     // Initially size of min heap is equal to V
-    minHeap->size = V;
+    minHeap->size = graph->NumeroNodi;
   
     // In the followin loop, 
     // min heap contains all nodes
     // whose shortest distance 
     // is not yet finalized.
-    while (!HeapisEmpty(minHeap))
+    while (!HeapisEmptyFloat(minHeap))
     {
         // Extract the vertex with 
         // minimum distance value
-        NodoHeap minHeapNode = extractMin(minHeap);
+        NodoHeapFloat MinHeapNode = extractMinFloat(minHeap);
         
         // Store the extracted vertex number
-        int u = minHeapNode->v; 
+        int u = MinHeapNode->v; 
   
         // Traverse through all adjacent 
         // vertices of u (the extracted
         // vertex) and update 
         // their distance values
-        ArchiGrafo pCrawl = graph->ListaAdiacenza[u].head;
-        while (pCrawl != NULL)
+        ArchiGrafo VisitatorePercorso = graph->ListaAdiacenza[u].head;
+        while (VisitatorePercorso != NULL)
         {
-            int v = pCrawl->key;
+            int v = VisitatorePercorso->key;
   
             // If shortest distance to v is
             // not finalized yet, and distance to v
             // through u is less than its 
             // previously calculated distance
-            if (isInMinHeap(minHeap, v) && cost[u] != INT_MAX && pCrawl->costo + cost[u] < cost[v])
+            if (isInMinHeapFloat(minHeap, v) && cost[u] != INT_MAX && VisitatorePercorso->costo + cost[u] < cost[v])
             {
-                cost[v] = cost[u] + pCrawl->costo;
+                cost[v] = cost[u] + VisitatorePercorso->costo;
   
                 // update distance 
                 // value in min heap also
-                decreaseKey(minHeap, v, cost[v]);
+                decreaseKeyFloat(minHeap, v, cost[v]);
             }
-            pCrawl = pCrawl->next;
+            VisitatorePercorso = VisitatorePercorso->next;
         }
     }
   
     // print the calculated cheapest path
-    printArrFloat(cost, V);
+    printArrFloat(cost, graph->NumeroNodi);
+    return cost[dest];
 }
 
 /**
@@ -887,4 +903,49 @@ void deallocaGrafo(MappaCollegamenti GrafoInput){
     }
     free(GrafoInput->ListaAdiacenza);
     free(GrafoInput);
+}
+
+/**
+ * @brief Load albergo giusto in memoria
+ * 
+ * @param Grafo 
+ * @param TappaInput 
+ * @return MappaCollegamenti 
+ */
+MappaCollegamenti LoadAlberghi(MappaCollegamenti Grafo, char *TappaInput){
+    FILE *fpInAlberghiNodi,*fpInAlberghiArchi;
+    char FileAlberghiNodi[MAX_STRINGHE],FileAlberghiArchi[MAX_STRINGHE];
+
+    sprintf(FileAlberghiNodi, "%sAlberghiNodi.txt", TappaInput);
+    sprintf(FileAlberghiArchi, "%sAlberghiArchi.txt", TappaInput);
+    fpInAlberghiNodi = fopen(FileAlberghiNodi,"r");
+    fpInAlberghiArchi = fopen (FileAlberghiArchi, "r");
+    if(FileAlberghiNodi!=NULL && fpInAlberghiArchi!=NULL){
+        Grafo = LetturaDaFILEGrafo(fpInAlberghiNodi,fpInAlberghiArchi,Grafo);
+    }
+    fclose(fpInAlberghiNodi);
+    fclose(fpInAlberghiArchi);
+
+    return Grafo;
+}
+
+/**
+ * @brief salvataggio in FILE degli alberghi
+ * 
+ * @param Grafo 
+ * @param TappaInput 
+ */
+void SaveAlberghi(MappaCollegamenti Grafo, char *TappaInput){
+    FILE *fpOutAlberghiNodi,*fpOutAlberghiArchi;
+    char FileAlberghiNodi[MAX_STRINGHE],FileAlberghiArchi[MAX_STRINGHE];
+    
+    sprintf(FileAlberghiNodi, "%sAlberghiNodi.txt", TappaInput);
+    sprintf(FileAlberghiArchi, "%sAlberghiArchi.txt", TappaInput);
+    fpOutAlberghiArchi= fopen (FileAlberghiArchi, "w+");
+    fpOutAlberghiNodi = fopen(FileAlberghiNodi,"w+");
+
+    CreazioneFILEGrafoNodi(fpOutAlberghiNodi,Grafo);
+    CreazioneFILEGrafoArchi(fpOutAlberghiArchi,Grafo);
+    fclose(fpOutAlberghiNodi);
+    fclose(fpOutAlberghiArchi);
 }

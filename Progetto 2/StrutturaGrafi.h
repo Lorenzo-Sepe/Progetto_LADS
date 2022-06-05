@@ -36,27 +36,29 @@ int getEmpty(MappaCollegamenti Grafo);
 void stampa_grafo(MappaCollegamenti GrafoInput);
 void DepthFirstSearch(MappaCollegamenti GrafoInput);
 void DFS_Visita(MappaCollegamenti GrafoInput, int i, int *VettoreFlag);
-void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, int distanza, float costo, int visibilitaInput); //orientato   
+void Aggiungi_Arco(MappaCollegamenti graph, int src, int dest, int distanza, float costo, int visibilitaInput); //non orientato   
+void Rimuovi_Arco(MappaCollegamenti graph, int src, int dest);
+
 ArchiGrafo createNode(int v);
-int GradoUscita (MappaCollegamenti GrafoInput, int VerticeInput);
-int GradoIngresso(MappaCollegamenti GrafoInput, int VerticeInput);
-int Ricerca_Vertice_In_Adj (ArchiGrafo ListaInput, int VerticeInput);
+
+ArchiGrafo Ricerca_Vertice_In_Adj (ArchiGrafo ListaInput, int VerticeInput);
+ArchiGrafo eliminaNodoListaAdj(ArchiGrafo head, ArchiGrafo nodo);
 int lunghezzaListaAdj(ArchiGrafo head);
 void deallocaGrafo(MappaCollegamenti GrafoInput);
 void deallocaListaAdiacenza(ArchiGrafo head);
 int nodo_isolato(MappaCollegamenti g, int nodo);
+int grafoSconnesso(MappaCollegamenti grafoInput);
 
-
-int VerificaGrafoConnesso(MappaCollegamenti GrafoInput);
-
-void dijkstraDistanza(MappaCollegamenti graph, int src);
-void dijkstraCosto(MappaCollegamenti graph, int src);
+float dijkstraDistanza(MappaCollegamenti graph, int src, int dest);
+float dijkstraCosto(MappaCollegamenti graph, int src, int dest);
 void printArr(int dist[], int n);
-void printArrFloat(float dist[], int n);
+void printArrFloat(float cost[], int n);
+void printPath(int parent[], int j);
 
 void stamapVettoreAdiacenza(MappaCollegamenti GrafoInput);
 
 MappaCollegamenti g_insert(MappaCollegamenti GrafoInput, char* NomeInput);
+MappaCollegamenti g_delete(MappaCollegamenti GrafoInput, int IndexInput);
 MappaCollegamenti EliminazioneLogicaNodo(MappaCollegamenti GrafoInput, int NodoInput);
 
 MappaCollegamenti aggiungiAListaDiAdiacenza(MappaCollegamenti GrafoInput, int i, int keyInput,char* NomeInput, int distanzaInput,float costoInput,int visibilitaInput);
@@ -65,13 +67,15 @@ char* get_Nome_from_Indice(MappaCollegamenti GrafoInput, int IndiceInput);
 
 void CreazioneFILEGrafoNodi(FILE *fpNodi, MappaCollegamenti GrafoInput);
 void CreazioneFILEGrafoArchi(FILE *fpArchi, MappaCollegamenti GrafoInput);
-//void CreazioneFILEGrafo(FILE *fpNodi, FILE *fpArchi, MappaCollegamenti GrafoInput);
+
 void deallocaGrafo(MappaCollegamenti GrafoInput);
 
 MappaCollegamenti LetturaDaFILEGrafoNodi (FILE *fp);
 MappaCollegamenti LetturaDaFILEGrafoCollegamenti (FILE *fp, MappaCollegamenti GrafoInput);
-struct GrafoCollegamenti* LetturaDaFILEGrafo(FILE *fpNodi, FILE *fpArchi, struct GrafoCollegamenti *GrafoInput);
+MappaCollegamenti LetturaDaFILEGrafo(FILE *fpNodi, FILE *fpArchi, struct GrafoCollegamenti *GrafoInput);
+void SaveAlberghi(MappaCollegamenti Grafo, char *TappaInput);
+MappaCollegamenti LoadAlberghi(MappaCollegamenti Grafo, char *TappaInput);
 
-
+char* FormattazioneTappe(char* TappaInput);
 #endif
 
