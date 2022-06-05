@@ -1,0 +1,5 @@
+s.lorenzo@studenti.unina.it LorenzoSepe 1550.000000 
+ADMIN ADMIN 0.000000 
+antonio.todisco@studenti.unina.it AntonioTodisco 1000.00
+vin.papale@studenti.unina.it VincenzoPapale 1000.00
+stranieri@unina.it Dottoressa 0

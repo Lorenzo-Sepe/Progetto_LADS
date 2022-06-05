@@ -32,7 +32,7 @@ int main(int argc, char const *argv[])
     }
     fclose(fpInClienti);
 
-//lettura aereoporti
+    //lettura aereoporti
     fpInCollegamentiAereoArchi = fopen("VoliDisponibili.txt","r");
     fpInCollegamentiAereoNodi = fopen("MappaTappe.txt","r");
     if (fpInCollegamentiAereoArchi != NULL || fpInCollegamentiAereoNodi != NULL)
@@ -415,7 +415,7 @@ int main(int argc, char const *argv[])
                         //Load albergo giusto in memoria
                         CollegamentiAlberghi=LoadAlberghi(CollegamentiAlberghi,SRCInput);
 
-                        if (strcp(Scelta,"C") == 0 || strcp(Scelta,"c") == 0)
+                        if (strcmp(Scelta,"C") == 0 || strcmp(Scelta,"c") == 0)
                         {   //Costo
                             PrezzoFinale=dijkstraCosto(CollegamentiAereo, get_Indice_from_Nome(CollegamentiAereo,SRCInput), get_Indice_from_Nome(CollegamentiAereo,DESTInput));
                         }
@@ -481,7 +481,7 @@ int main(int argc, char const *argv[])
                     {
                         printf("Vuoi prenotare il viaggio in base al Costo o la Distanza? C - costo, D - distanza\n");
                         scanf("%s",&Scelta);
-                        if (strcp(Scelta,"C") == 0 || strcp(Scelta,"c") == 0)
+                        if (strcmp(Scelta,"C") == 0 || strcmp(Scelta,"c") == 0)
                         {
                             PrezzoFinale = dijkstraCosto(CollegamentiTreno, get_Indice_from_Nome(CollegamentiTreno,SRCInput), get_Indice_from_Nome(CollegamentiTreno,DESTInput));
                         }

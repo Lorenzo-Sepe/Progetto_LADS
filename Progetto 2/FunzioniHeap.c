@@ -261,7 +261,7 @@ int HeapisEmptyFloat(HeapMinimoFloat minHeap){
  * @return NodoHeapFloat 
  */
 NodoHeapFloat extractMinFloat(HeapMinimoFloat minHeap){
-    if (HeapisEmpty(minHeap))
+    if (HeapisEmptyFloat(minHeap))
         return NULL;
   
     // Store the root node
@@ -277,7 +277,7 @@ NodoHeapFloat extractMinFloat(HeapMinimoFloat minHeap){
   
     // Reduce heap size and heapify root
     --minHeap->size;
-    minHeapify(minHeap, 0);
+    minHeapifyFloat(minHeap, 0);
   
     return root;
 }
