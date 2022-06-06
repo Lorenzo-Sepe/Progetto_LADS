@@ -1,6 +1,6 @@
-antonio.todisco@studenti.unina.it AntonioTodisco 1000.000000 
-stranieri@unina.it Dottoressa 0.000000 
-vin.papale@studenti.unina.it VincenzoPapale 1000.000000 
-s.lorenzo@studenti.unina.it LorenzoSepe 1550.000000 
-p p 2000.000000 
 ADMIN ADMIN 0.000000 
+p p 2000.000000 
+s.lorenzo@studenti.unina.it LorenzoSepe 1550.000000 
+vin.papale@studenti.unina.it VincenzoPapale 1000.000000 
+stranieri@unina.it Dottoressa 0.000000 
+antonio.todisco@studenti.unina.it AntonioTodisco 1000.000000 

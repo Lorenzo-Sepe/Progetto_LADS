@@ -210,15 +210,20 @@ void CreazioneFILEGrafoArchi(FILE *fpArchi, MappaCollegamenti GrafoInput){
 
 void CreazioneFILEGrafoNodi(FILE *fpNodi, MappaCollegamenti GrafoInput){
 
-    int i;
-
-    fprintf(fpNodi,"%d\n", GrafoInput->NumeroNodi);
+    int i,ris=0;
+    for ( i = 0; i < GrafoInput->NumeroNodi; i++)
+    {
+    	if (GrafoInput->ListaAdiacenza[i].visibilita == 1)
+    		ris++;
+	}
+	
+    fprintf(fpNodi,"%d\n", ris);
 
     for ( i = 0; i < GrafoInput->NumeroNodi; i++)
 
     {
-
-        fprintf(fpNodi,"%s %d\n", GrafoInput->ListaAdiacenza[i].NomeTappa, GrafoInput->ListaAdiacenza[i].visibilita);
+		if (GrafoInput->ListaAdiacenza[i].visibilita == 1)
+	        fprintf(fpNodi,"%s %d\n", GrafoInput->ListaAdiacenza[i].NomeTappa, GrafoInput->ListaAdiacenza[i].visibilita);
 
     }
 
