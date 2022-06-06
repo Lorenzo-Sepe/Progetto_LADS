@@ -1,0 +1,5 @@
+4
+Aeroporto 1
+Stazione 1
+Hotel_venice 1
+Grand_hotel_peace 1

@@ -1,0 +1,7 @@
+6
+Aeroporto 1
+Stazione 1
+Hotel_duomo 1
+Hotel_riviera 1
+Grand_hotel_milan 1
+Hotel_gambino 1

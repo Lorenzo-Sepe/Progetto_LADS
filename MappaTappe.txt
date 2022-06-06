@@ -1,0 +1,7 @@
+6
+Milano 1
+Napoli 1
+Roma 1
+Venezia 1
+Torino 1
+Firenze 0

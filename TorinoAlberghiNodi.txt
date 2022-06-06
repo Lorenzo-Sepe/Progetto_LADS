@@ -1,0 +1,7 @@
+6
+Aeroporto 1
+Stazione 1
+Turin_hotel 1
+Hotel_arcobaleno 1
+Hotel_bello 1
+Hotel_italiano 1

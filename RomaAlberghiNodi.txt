@@ -1,0 +1,9 @@
+8
+Aeroporto 1
+Stazione 1
+Colosseo_hotel 1
+Hotel_piazza_navona 1
+Hotel_piazza_di_spagna 1
+Luxury_hotel_roma 1
+Italy_hotel 1
+Roma_bb 1

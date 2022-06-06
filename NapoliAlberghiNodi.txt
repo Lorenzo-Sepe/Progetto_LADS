@@ -1,0 +1,6 @@
+5
+Aeroporto 1
+Stazione 1
+Hotel_Mediterraneo 1
+Hotel_Syrene 1
+Hotel_Luxury 1
